@@ -32,6 +32,6 @@ jobs:
       - name: Install dependencies
         run: npm install -D
       - name: Check formatting with Prettier
-        run: npm format:check
+        run: npm run format:check
 
       
