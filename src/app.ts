@@ -19,6 +19,16 @@ start().catch(async (e) => {
   await fct.waitAndReboot(3000);
 });
 
+
+
+
+// FIXME: this fails Prettier
+
+
+
+
+
+
 async function start() {
   await manager.spawn({ delay: 10000, timeout: 120000 });
 
