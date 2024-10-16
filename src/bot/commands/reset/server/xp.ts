@@ -8,21 +8,21 @@ import {
 import { subcommand } from 'bot/util/registry/command.js';
 import { useConfirm } from 'bot/util/component.js';
 import { requireUser } from 'bot/util/predicates.js';
-import { ResetGuildAll } from 'bot/models/resetModel.js';
+import { ResetGuildXP } from 'bot/models/resetModel.js';
 import { handleResetCommandsCooldown } from 'bot/util/cooldownUtil.js';
 
-export const all = subcommand({
+export const xp = subcommand({
   data: {
-    name: 'all',
-    description: 'Reset all server settings, XP, and statistics.',
+    name: 'xp',
+    description: 'Reset XP for all members in the server.',
     type: ApplicationCommandOptionType.Subcommand,
   },
   async execute({ interaction }) {
     if (
-      !interaction.member.permissionsIn(interaction.channel!).has(PermissionFlagsBits.Administrator)
+      !interaction.member.permissionsIn(interaction.channel!).has(PermissionFlagsBits.ManageGuild)
     ) {
       await interaction.reply({
-        content: 'You need the ADMINISTRATOR permission to use this command.',
+        content: 'You need the permission to manage the server in order to use this command.',
         ephemeral: true,
       });
       return;
@@ -31,6 +31,7 @@ export const all = subcommand({
     if ((await handleResetCommandsCooldown(interaction)).denied) return;
 
     const predicate = requireUser(interaction.user);
+
     const confirmRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
       new ButtonBuilder()
         .setCustomId(confirmButton.instanceId({ predicate }))
@@ -45,8 +46,7 @@ export const all = subcommand({
     );
 
     await interaction.reply({
-      content:
-        'Are you sure you want to reset **all server settings, XP, and statistics?**\n\n**This cannot be undone.**',
+      content: `Are you sure you want to reset **all server members' XP**?\n\nThis will not reset associated statistics - try \`/reset server statistics\`! **This cannot be undone.**`,
       ephemeral: true,
       components: [confirmRow],
     });
@@ -55,14 +55,13 @@ export const all = subcommand({
 
 const { confirmButton, denyButton } = useConfirm({
   async confirmFn({ interaction }) {
-    const job = new ResetGuildAll(interaction.guild);
+    const job = new ResetGuildXP(interaction.guild);
 
     await interaction.update({ content: 'Preparing to reset. Please wait...', components: [] });
 
     await job.plan();
     await job.logStatus(interaction);
 
-    console.debug('Running job');
     await job.runUntilComplete({
       onPause: async () => await job.logStatus(interaction),
       globalBufferTime: 100,

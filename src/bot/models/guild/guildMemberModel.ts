@@ -6,7 +6,7 @@ import type {
   GuildMemberUpdate,
 } from 'models/types/kysely/shard.js';
 import { getGuildModel } from './guildModel.js';
-import { getGuildMemberTotalScore } from '../rankModel.js';
+import { fetchMemberTotalXp } from '../rankModel.js';
 import { CachedModel } from '../generic/model.js';
 
 const cachedFields = ['notifyLevelupDm', 'reactionVote'] as const satisfies (keyof DBMember)[];
@@ -96,29 +96,14 @@ export async function getRankedUserIds(guild: Guild) {
 
   const db = getShardDb(dbHost);
 
-  const xpTypes = ['voiceMinute', 'invite', 'vote', 'bonus'] as const;
-
-  let idQuery = db
-    .selectFrom('textMessage')
-    .distinct()
+  const rankedMembers = await db
+    .selectFrom('guildMember')
     .select('userId')
     .where('guildId', '=', guild.id)
-    .where('alltime', '!=', 0);
+    .where('alltime', '!=', 0)
+    .execute();
 
-  for (const type of xpTypes) {
-    idQuery = idQuery.union(
-      db
-        .selectFrom(type)
-        .distinct()
-        .select('userId')
-        .where('guildId', '=', guild.id)
-        .where('alltime', '!=', 0),
-    );
-  }
-
-  const res = await idQuery.execute();
-
-  return res.map(({ userId }) => userId);
+  return rankedMembers.map(({ userId }) => userId);
 }
 
 export async function getMemberModel(member: GuildMember): Promise<GuildMemberModel> {
@@ -140,7 +125,7 @@ async function buildCache(member: GuildMember): Promise<GuildMemberModel> {
   const cache = foundCache ?? { ...(await loadDefaultCache(dbHost)) };
 
   const built = new GuildMemberModel(member, dbHost, cache, {
-    totalXp: parseInt(await getGuildMemberTotalScore(member.guild, member.id)),
+    totalXp: await fetchMemberTotalXp(member.guild, member.id),
   });
 
   memberCache.set(member, built);
