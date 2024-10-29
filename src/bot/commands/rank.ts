@@ -157,11 +157,11 @@ async function generateCard(
 }
 
 const _prettifyTime: { [k in StatTimeInterval]: string } = {
-  day: 'Today',
-  week: 'This week',
-  month: 'This month',
-  year: 'This year',
-  alltime: 'Forever',
+  day: t('rank.today'),
+  week: t('rank.week'),
+  month: t('rank.month'),
+  year: t('rank.year'),
+  alltime: t('rank.forever'),
 };
 
 async function generateChannelCard(
@@ -181,14 +181,14 @@ async function generateChannelCard(
     .setColor('#4fd6c8')
     .addFields(
       {
-        name: 'Text',
+        name: t('rank.text'),
         value: (
           await getTopChannels(page, guild, state.targetUser.id, state.time, 'textMessage')
         ).slice(0, 1024),
         inline: true,
       },
       {
-        name: 'Voice',
+        name: t('rank.voice'),
         value: (
           await getTopChannels(page, guild, state.targetUser.id, state.time, 'voiceMinute')
         ).slice(0, 1024),
@@ -264,7 +264,7 @@ async function getTopChannels(
   );
 
   if (!guildMemberTopChannels || guildMemberTopChannels.length == 0)
-    return ${t('rank.noEntries')};
+    return `${t('rank.noEntries')}`;
 
   const channelMention = (index: number) =>
     nameUtil.getChannelMention(guild.channels.cache, guildMemberTopChannels[index].channelId);
@@ -316,8 +316,8 @@ async function generateRankCard(
   }
 
   const infoStrings = [
-    `Total XP: ${Math.round(scores[state.time])} (#${positions.xp})`,
-    `Next Level: ${Math.floor((levelProgression % 1) * 100)}%`,
+    `${t('rank.totalXP')}: ${Math.round(scores[state.time])} (#${positions.xp})`,
+    `${t('rank.nextLevel')}: ${Math.floor((levelProgression % 1) * 100)}%`,
   ].join('\n');
 
   embed.addFields(
@@ -326,7 +326,7 @@ async function generateRankCard(
       value: infoStrings,
     },
     {
-      name: 'Stats',
+      name: t('rank.stats'),
       value: getStatisticStrings(guildCache, statistics, positions, state.time),
     },
   );
@@ -352,7 +352,7 @@ function getGlobalComponents(
   return [
     {
       type: ComponentType.ActionRow,
-      components: [component('rank', 'Stats'), component('topChannels', 'Top Channels')],
+      components: [component('rank', t('rank.stats')), component('topChannels', t('rank.TopChannels'))],
     },
     {
       type: ComponentType.ActionRow,

@@ -16,6 +16,17 @@
     "channelTop": "Channel toplist for",
     "noEntries": "No entries found for this page.",
     "statsOnServer": "stats on server",
-    "bonusEnds": "Bonus XP ends"
+    "bonusEnds": "Bonus XP ends",
+    "day": "Today",
+    "week": "This week",
+    "month": "This month",
+    "year": "This year",
+    "alltime": "Alltime",
+    "text": "text",
+    "voice": "voice",
+    "totalXP": "Total XP",
+    "nextLevel": "Next Level",
+    "stats": "Stats",
+    "TopChannels": "Top Channels"
   }
 }
