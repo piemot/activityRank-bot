@@ -11,5 +11,6 @@
       "value": "{{time}}ms",
       "empty": "*Not enough uptime*"
     }
-  }
+  },
+  "example": "test"
 }
