@@ -264,7 +264,7 @@ async function getTopChannels(
   );
 
   if (!guildMemberTopChannels || guildMemberTopChannels.length == 0)
-    return `${t('rank.noEntries')}`;
+    return t('rank.noEntries');
 
   const channelMention = (index: number) =>
     nameUtil.getChannelMention(guild.channels.cache, guildMemberTopChannels[index].channelId);
