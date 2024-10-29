@@ -173,7 +173,7 @@ async function generateChannelCard(
 
   const guildMemberInfo = await nameUtil.getGuildMemberInfo(guild, state.targetUser.id);
 
-  const header = `Channel toplist for ${guildMemberInfo.name} | ${_prettifyTime[state.time]}`;
+  const header = `${t('rank.channelTop')} ${guildMemberInfo.name} | ${_prettifyTime[state.time]}`;
 
   const embed = new EmbedBuilder()
     .setTitle(header)
@@ -263,7 +263,7 @@ async function getTopChannels(
   );
 
   if (!guildMemberTopChannels || guildMemberTopChannels.length == 0)
-    return 'No entries found for this page.';
+    return ${t('rank.noEntries')};
 
   const channelMention = (index: number) =>
     nameUtil.getChannelMention(guild.channels.cache, guildMemberTopChannels[index].channelId);
@@ -304,14 +304,14 @@ async function generateRankCard(
   );
 
   const embed = new EmbedBuilder()
-    .setAuthor({ name: `${state.time} stats on server ${guild.name}` })
+    .setAuthor({ name: `${state.time} ${t('rank.statsOnServer')} ${guild.name}` })
     .setColor('#4fd6c8')
     .setThumbnail(state.targetUser.avatarURL());
 
   const bonusUntil = new Date(parseInt(myGuild.bonusUntilDate) * 1000);
 
   if (bonusUntil.getTime() > Date.now()) {
-    embed.setDescription(`**!! Bonus XP ends ${time(bonusUntil, 'R')} !!**\n`);
+    embed.setDescription(`**!! ${t('rank.bonusEnds')} ${time(bonusUntil, 'R')} !!**\n`);
   }
 
   const infoStrings = [
