@@ -12,5 +12,10 @@
       "empty": "*Not enough uptime*"
     }
   },
-  "test": "test"
+  "rank": {
+    "channelTop": "Channel toplist for",
+    "noEntries": "No entries found for this page.",
+    "statsOnServer": "stats on server",
+    "bonusEnds": "Bonus XP ends"
+  }
 }
