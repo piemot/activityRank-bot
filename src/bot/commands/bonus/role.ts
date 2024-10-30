@@ -126,7 +126,7 @@ async function betaSystem(
   // https://github.com/discordjs/discord.js/blob/ff85481d3e7cd6f7c5e38edbe43b27b104e82fba/packages/discord.js/src/managers/GuildMemberManager.js#L493
 
   await interaction.reply({
-    content: t('bonus.processing1', {interaction.guild.memberCount}),
+    content: t('bonus.processing1', {memberCount: interaction.guild.memberCount}),
     ephemeral: true,
   });
 
