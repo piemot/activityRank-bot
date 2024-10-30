@@ -30,16 +30,12 @@
     "TopChannels": "Top Channels"
   },
 "bonus": {
-  "notInServer": "This user is not in the server.",
-  "cannotAddXP": "You cannot add bonus XP to bots.",
-  "success": "Successfully gave/took",
-  "bonusXP": "bonus XP to",
   "massXP": "This server already has a mass role operation running.",
-  "apply": "Applying",
-  "xp": "XP",
-  "applyXP": "Applying XP",
-  "withRole": "member(s) with role.",
-  "proccessing": "Processing",
-  "members": "Members"
+  "applying": "Applying {{changeAmount}} XP...",
+  "successfully": "Successfully gave {{changeAmount}} bonus XP to {{affected}} member(s) with role {{role}}",
+  "processing1": "Processing {{interaction.guild.memberCount}} members",
+  "processing2": "Processing {{members.size}} members...)",
+  "processing3": "Processing {{memberCount}} members...",
+  "applyXP": "Applying XP"
 }
 }

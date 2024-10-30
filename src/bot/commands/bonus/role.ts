@@ -95,7 +95,7 @@ async function oldSystem(
   interaction.client.logger.debug(`Old role give to ${members.size} members`);
 
   await interaction.editReply({
-    content: `${t(bonus.apply)} \`${changeAmount}\` ${t(bonus.xp)}`,
+    content: t('bonus.applying', {changeAmount}),
     allowedMentions: { parse: [] },
   });
 
@@ -112,7 +112,7 @@ async function oldSystem(
   interaction.client.logger.debug(`Old role give affected ${affected} members`);
 
   await interaction.editReply({
-    content: `${t(bonus.success)} \`${changeAmount}\` ${t(bonus.bonusXP)} \`${affected}\` ${t(bonus.withRole)} ${role}`,
+    content: t('bonus.successfully', {changeAmount, affected, role}),
     allowedMentions: { parse: [] },
   });
 }
@@ -126,7 +126,7 @@ async function betaSystem(
   // https://github.com/discordjs/discord.js/blob/ff85481d3e7cd6f7c5e38edbe43b27b104e82fba/packages/discord.js/src/managers/GuildMemberManager.js#L493
 
   await interaction.reply({
-    content: `${t(bonus.processing)} ${interaction.guild.memberCount} ${t(bonus.members)}`,
+    content: t('bonus.processing1', {interaction.guild.memberCount}),
     ephemeral: true,
   });
 
@@ -174,7 +174,7 @@ async function betaSystem(
     if (affected % 2000 === 0) {
       await interaction.editReply({
         content: stripIndent`
-          ${t(bonus.rocessing)} \`${members.size}\` ${t(bonus.members)}
+          ${t('bonus.processing2', {members.size})}
           \`\`\`yml
           ${progressBar(affected, members.size)}
           \`\`\`
@@ -188,7 +188,7 @@ async function betaSystem(
   interaction.client.logger.debug(`New role give affected ${affected} members`);
 
   await interaction.followUp({
-    content: `${t(bonus.success)} \`${changeAmount}\` ${t(bonus.bonusXP)} \`${affected}\` ${t(bonus.withRole)} ${role}`,
+    content: t('bonus.successfully', {changeAmount, affected, role}),    
     allowedMentions: { parse: [] },
     ephemeral: true,
   });
@@ -220,7 +220,7 @@ async function getApplicableMembers(
       if (i % 20 === 0) {
         reply({
           content: stripIndent`
-            ${t(bonus.proccessing)} \`${memberCount}\` ${t(bonus.members)}
+          ${t('bonus.processing3', {memberCount})}
             \`\`\`yml
             ${progressBar(i, chunk.count)}
             \`\`\`
