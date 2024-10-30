@@ -51,7 +51,7 @@ export const role = subcommand({
   async execute({ interaction, client }) {
     if (currentJobs.has(interaction.guild.id)) {
       await interaction.reply({
-        content: 'This server already has a mass role operation running.',
+        content: t('bonus.massXP'),
         ephemeral: true,
       });
       return;
@@ -95,7 +95,7 @@ async function oldSystem(
   interaction.client.logger.debug(`Old role give to ${members.size} members`);
 
   await interaction.editReply({
-    content: `Applying \`${changeAmount}\` XP...`,
+    content: `${t(bonus.apply)} \`${changeAmount}\` ${t(bonus.xp)}`,
     allowedMentions: { parse: [] },
   });
 
@@ -112,8 +112,7 @@ async function oldSystem(
   interaction.client.logger.debug(`Old role give affected ${affected} members`);
 
   await interaction.editReply({
-    content: oneLine`Successfully gave \`${changeAmount}\` bonus XP 
-      to \`${affected}\` member${affected == 1 ? '' : 's'} with role ${role}`,
+    content: `${t(bonus.success)} \`${changeAmount}\` ${t(bonus.bonusXP)} \`${affected}\` ${t(bonus.withRole)} ${role}`,
     allowedMentions: { parse: [] },
   });
 }
@@ -127,7 +126,7 @@ async function betaSystem(
   // https://github.com/discordjs/discord.js/blob/ff85481d3e7cd6f7c5e38edbe43b27b104e82fba/packages/discord.js/src/managers/GuildMemberManager.js#L493
 
   await interaction.reply({
-    content: `Processing ${interaction.guild.memberCount} members`,
+    content: `${t(bonus.processing)} ${interaction.guild.memberCount} ${t(bonus.members)}`,
     ephemeral: true,
   });
 
@@ -158,7 +157,7 @@ async function betaSystem(
   console.debug(`${members.size} Members found`);
 
   await interaction.followUp({
-    content: 'Applying XP...',
+    content: t('bonus.applyXP'),
     ephemeral: true,
   });
 
@@ -175,7 +174,7 @@ async function betaSystem(
     if (affected % 2000 === 0) {
       await interaction.editReply({
         content: stripIndent`
-          Processing \`${members.size}\` members...
+          ${t(bonus.rocessing)} \`${members.size}\` ${t(bonus.members)}
           \`\`\`yml
           ${progressBar(affected, members.size)}
           \`\`\`
@@ -189,14 +188,14 @@ async function betaSystem(
   interaction.client.logger.debug(`New role give affected ${affected} members`);
 
   await interaction.followUp({
-    content: oneLine`Successfully gave \`${changeAmount}\` bonus XP
-      to \`${affected}\` member${affected == 1 ? '' : 's'} with role ${role}`,
+    content: `${t(bonus.success)} \`${changeAmount}\` ${t(bonus.bonusXP)} \`${affected}\` ${t(bonus.withRole)} ${role}`,
     allowedMentions: { parse: [] },
     ephemeral: true,
   });
 }
 
 // not sure how to use async/await here so just promise-based
+// Just do bsync then -Wolfi
 async function getApplicableMembers(
   roleId: string,
   nonce: string,
@@ -221,7 +220,7 @@ async function getApplicableMembers(
       if (i % 20 === 0) {
         reply({
           content: stripIndent`
-            Processing \`${memberCount}\` members...
+            ${t(bonus.proccessing)} \`${memberCount}\` ${t(bonus.members)}
             \`\`\`yml
             ${progressBar(i, chunk.count)}
             \`\`\`

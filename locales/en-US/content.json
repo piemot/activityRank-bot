@@ -28,5 +28,18 @@
     "nextLevel": "Next Level",
     "stats": "Stats",
     "TopChannels": "Top Channels"
-  }
+  },
+"bonus": {
+  "notInServer": "This user is not in the server.",
+  "cannotAddXP": "You cannot add bonus XP to bots.",
+  "success": "Successfully gave/took",
+  "bonusXP": "bonus XP to",
+  "massXP": "This server already has a mass role operation running.",
+  "apply": "Applying",
+  "xp": "XP",
+  "applyXP": "Applying XP",
+  "withRole": "member(s) with role.",
+  "proccessing": "Processing",
+  "members": "Members"
+}
 }

@@ -29,7 +29,7 @@ export const member = subcommand({
 
     if (!member) {
       await interaction.reply({
-        content: "This user isn't in the server.",
+        content: t('bonus.notInServer'),
         ephemeral: true,
       });
       return;
@@ -37,7 +37,7 @@ export const member = subcommand({
 
     if (member.user.bot) {
       await interaction.reply({
-        content: 'You cannot add bonus XP to bots.',
+        content: t('bonus.cannotAddXP'),
         ephemeral: true,
       });
       return;
@@ -47,7 +47,7 @@ export const member = subcommand({
 
     await statFlushCache.addBonus(member, change);
     await interaction.reply({
-      content: `Successfully gave \`${change}\` bonus XP to ${member}!`,
+      content: `${t(bonus.success)} \`${change}\` ${t(bonusXP)} ${member}!`,
       allowedMentions: { parse: [] },
     });
   },
