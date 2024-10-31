@@ -85,7 +85,7 @@
   },
   "role": {
     "missingPerms": "You need the permission to manage the server in order to use this command.",
-    "everyone": "You cannot make @.everyone a level role.",
+    "everyone": "You cannot make @everyone a level role.",
     "manageRoles": "Please ensure the bot has the permission to manage roles.",
     "error1": "Using an assignLevel higher than or equal to a deassignLevel will not work: the role gets removed as soon as it gets added!\nDid you mean: **assign-level:{{deassignLevel}} deassign-level:{{assignLevel}}**?",
     "missingOption": "You must specify at least one option for this command to do anything!",
