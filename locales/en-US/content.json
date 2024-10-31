@@ -2,6 +2,7 @@
   "ping": {
     "title": "🏓 Pong! 🏓",
     "isDev": "This is a development version of ActivityRank.",
+    "invite": "Invite the bot",
     "latency": {
       "name": "🔁 Roundtrip Latency 🔁",
       "value": "{{time}}ms"
@@ -66,6 +67,21 @@
     "reactVote": "Reaction Voting",
     "reactVoteDescription": "If this is enabled, reacting with the server's voteEmote, {{value}}, will give an upvote to the member that sent the message.",
     "personalSettings": "Personal Settings"
+  },
+  "messages": {
+    "select": "Message Selection",
+    "missingPerms": "You need the permission to manage the server in order to use this command.",
+    "joinMessage": "Server Join Message",
+    "joinMessageDescription": "The message to send when a member joins the server",
+    "levelupMessage": "Levelup Message",
+    "levelupMessageDescription": "The message to send when a member gains a level",
+    "assignMessage": "Role Assign Message",
+    "assignMessageDescription": "The message to send when a member gains a role, unless overridden",
+    "deassignMessage": "Role Deassign Message",
+    "deassignMessageDescription": "The message to send when a member loses a role, unless overridden",
+    "askClear": "Which message do you want to clear?",
+    "toClear": "The message to clear",
+    "cleared": "Cleared {{value}}"
   }
 }
 }

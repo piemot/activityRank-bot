@@ -53,7 +53,7 @@ const _prettifyId: Record<ServerMessage, string> = {
 
 const generateModal = (message: ServerMessage): ModalComponentData => ({
   customId: setModal.instanceId({ data: { message } }),
-  title: 'Message Selection',
+  title: t('config.messages.select'),
   components: [
     actionrow([
       {
@@ -79,7 +79,7 @@ export default command.basic({
       !interaction.member.permissionsIn(interaction.channel!).has(PermissionFlagsBits.ManageGuild)
     ) {
       await interaction.reply({
-        content: 'You need the permission to manage the server in order to use this command.',
+        content: t('config.messages.missingPerms'),
         ephemeral: true,
       });
       return;
@@ -90,20 +90,20 @@ export default command.basic({
       color: 0x00ae86,
       fields: [
         {
-          name: 'Server Join Message',
-          value: 'The message to send when a member joins the server',
+          name: t('config.messages.joinMessage'),
+          value: t('config.messages.joinMessageDescription'),
         },
         {
-          name: 'Levelup Message',
-          value: 'The message to send when a member gains a level',
+          name: t('config.messages.kevekupMessage'),
+          value: t('config.messages.levelupMessageDescription'),
         },
         {
-          name: 'Role Assign Message',
-          value: 'The message to send when a member gains a role, unless overridden',
+          name: t('config.messages.assignMessage'),
+          value: t('config.messages.assignMessageDescription'),
         },
         {
-          name: 'Role Deassign Message',
-          value: 'The message to send when a member loses a role, unless overridden',
+          name: t('config.messages.deassignMessage'),
+          value: t('config.messages.deassignMessageDescription'),
         },
       ],
     };
@@ -120,13 +120,13 @@ const clearButton = component({
   type: ComponentType.Button,
   async callback({ interaction }) {
     await interaction.reply({
-      content: 'Which message do you want to clear?',
+      content: t('config.messages.askClear'),
       components: [
         actionrow([
           {
             customId: clearMessageSelect.instanceId({ predicate: requireUser(interaction.user) }),
             type: ComponentType.StringSelect,
-            placeholder: 'The message to clear',
+            placeholder: t('config.messages.toClear'),
             options: selectOptions,
           },
         ]),
@@ -144,7 +144,7 @@ const clearMessageSelect = component({
     const model = await getGuildModel(interaction.guild);
     model.upsert({ [clearItem]: '' });
 
-    await interaction.reply({ content: `Cleared \`${_prettifyId[clearItem]}\``, ephemeral: true });
+    await interaction.reply({ content: t('config.messages.cleared', {value: _prettifyId[clearItem]}), ephemeral: true });
   },
 });
 
@@ -173,8 +173,8 @@ const setModal = modal<{ message: ServerMessage }>({
 });
 
 const selectOptions: readonly SelectMenuComponentOptionData[] = [
-  { label: 'Server Join Message', value: 'serverJoinMessage' },
-  { label: 'Levelup Message', value: 'levelupMessage' },
-  { label: 'Default Role Assign Message', value: 'roleAssignMessage' },
-  { label: 'Default Role Deassign Message', value: 'roleDeassignMessage' },
+  { label: t('config.messages.joinMessage'), value: 'serverJoinMessage' },
+  { label: t('config.messages.kevekupMessage'), value: 'levelupMessage' },
+  { label: t('config.messages.assignMessage'), value: 'roleAssignMessage' },
+  { label: t('config.messages.deassignMessage'), value: 'roleDeassignMessage' },
 ] satisfies { label: string; value: ServerMessage }[];
