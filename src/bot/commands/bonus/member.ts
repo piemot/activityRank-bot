@@ -47,7 +47,7 @@ export const member = subcommand({
 
     await statFlushCache.addBonus(member, change);
     await interaction.reply({
-      content: `${t(bonus.success)} \`${change}\` ${t(bonusXP)} ${member}!`,
+      content: `${t('bonus.success', {change, member})}`,
       allowedMentions: { parse: [] },
     });
   },

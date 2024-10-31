@@ -54,9 +54,8 @@ const settingButton = component<{
         await interaction.reply({
           embeds: [
             {
-              title: 'Oops!',
-              description:
-                '## No-Command Channels are __deprecated__.\n\nManage Application Command permissions in **[Server Settings](discord://-/guilds/${interaction.guild.id}/settings)** > **Integrations** > **ActivityRank** instead!\n\n*You can still **disable** No-Command channels.*',
+              title: t('config.channel.oops'),
+              description: t('config.channel.deprecated'),
               color: 0xfe5326,
             },
           ],
@@ -70,9 +69,8 @@ const settingButton = component<{
         await interaction.reply({
           embeds: [
             {
-              title: 'Oops!',
-              description:
-                '## Command-Only Channels are __deprecated__.\n\nManage Application Command permissions in **[Server Settings](discord://-/guilds/${interaction.guild.id}/settings)** > **Integrations** > **ActivityRank** instead!\n\n*You can still **disable** Command-Only channels.*',
+              title: t('config.channel.oops'),
+              description: t('config.channel.deprecated'),
               color: 0xfe5326,
             },
           ],
@@ -103,11 +101,11 @@ const generateRow = (
   myChannel: GuildChannel,
 ) => {
   const r = [
-    new ButtonBuilder().setLabel('No XP'),
-    new ButtonBuilder().setLabel('No Commands'),
-    new ButtonBuilder().setLabel('Command Only'),
-    new ButtonBuilder().setLabel('Server Join Channel'),
-    new ButtonBuilder().setLabel('Levelup Channel'),
+    new ButtonBuilder().setLabel(t('config.channel.noXP')),
+    new ButtonBuilder().setLabel(t('config.channel.noCommand')),
+    new ButtonBuilder().setLabel(t('config.channelcommandOnly')),
+    new ButtonBuilder().setLabel(t('config.channel.joinChannel')),
+    new ButtonBuilder().setLabel(t('config.channel.levelupChannel')),
   ];
 
   function disableIfNotText(builder: ButtonBuilder) {
@@ -187,13 +185,13 @@ export default command.basic({
     const resolvedChannel = parseChannel(interaction);
     if (resolvedChannel.status === ParserResponseStatus.ConflictingInputs) {
       await interaction.reply({
-        content: `You have specified both a channel and an ID, but they don't match.\nDid you mean: "/config-channel channel:${interaction.options.get('channel')!.value}"?`,
+        content: t('config.channel.conflict', {value: interaction.options.get('channel')!.value}),
         ephemeral: true,
       });
       return;
     } else if (resolvedChannel.status === ParserResponseStatus.NoInput) {
       await interaction.reply({
-        content: "You need to specify either a channel or a channel's ID!",
+        content: t("config.channel.notSpecified"),
         ephemeral: true,
       });
       return;
@@ -203,7 +201,7 @@ export default command.basic({
       !interaction.member.permissionsIn(interaction.channel!).has(PermissionFlagsBits.ManageGuild)
     ) {
       await interaction.reply({
-        content: 'You need the permission to manage the server in order to use this command.',
+        content: t('config.channel.missingPerms'),
         ephemeral: true,
       });
       return;
@@ -212,14 +210,14 @@ export default command.basic({
     const myChannel = await guildChannelModel.storage.get(interaction.guild, resolvedChannel.id);
 
     const embed = new EmbedBuilder()
-      .setAuthor({ name: 'Channel Settings' })
+      .setAuthor({ name: t('config.channel.channelSettings') })
       .setDescription(
         nameUtil.getChannelMention(interaction.guild.channels.cache, resolvedChannel.id),
       )
       .setColor(0x00ae86)
       .addFields({
-        name: 'No XP',
-        value: 'If this is enabled, no xp will be given in this channel.',
+        name: t('config.channelnoXP'),
+        value: t('config.channelnoXPenabled'),
       });
 
     if (
@@ -228,22 +226,20 @@ export default command.basic({
     ) {
       embed.addFields(
         {
-          name: 'No Commands',
-          value: stripIndent`If this is enabled, commands will not work in this channel.
-            > **Note:** It is recommended to use the Discord native system in \`Server Settings -> Integrations -> ActivityRank\` instead.`,
+          name: t('config.channel.noCommand'),
+          value: t('config.channel.noCommandDescription')
         },
         {
-          name: 'Command Only',
-          value: stripIndent`If this is enabled, this will be the **only channel commands will work in**, unless you have the \`Manage Server\` permission.
-            > **Note:** It is recommended to use the Discord native system in \`Server Settings -> Integrations -> ActivityRank\` instead.`,
+          name: t('config.channel.commandOnly'),
+          value: t('config.channel.commandOnlyDescription'),
         },
         {
-          name: 'Server Join Channel',
-          value: 'If this is enabled, server join messages will be sent to this channel.',
+          name: t('config.joinChannel'),
+          value: t('config.channel.joinChannelDescription'),
         },
         {
-          name: 'Levelup Channel',
-          value: 'If this is enabled, levelup messages will be sent to this channel.',
+          name: t('config.channel.levelupChannel'),
+          value: t('config.channel.levelupChannelDescription'),
         },
       );
     }
