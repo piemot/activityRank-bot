@@ -174,7 +174,7 @@ const setModal = modal<{ message: ServerMessage }>({
 
 const selectOptions: readonly SelectMenuComponentOptionData[] = [
   { label: t('config.messages.joinMessage'), value: 'serverJoinMessage' },
-  { label: t('config.messages.kevekupMessage'), value: 'levelupMessage' },
+  { label: t('config.messages.levelupMessage'), value: 'levelupMessage' },
   { label: t('config.messages.assignMessage'), value: 'roleAssignMessage' },
   { label: t('config.messages.deassignMessage'), value: 'roleDeassignMessage' },
 ] satisfies { label: string; value: ServerMessage }[];
