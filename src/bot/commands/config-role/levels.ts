@@ -42,7 +42,7 @@ export const levels = subcommand({
       !interaction.member.permissionsIn(interaction.channel).has(PermissionFlagsBits.ManageGuild)
     ) {
       await interaction.reply({
-        content: 'You need the permission to manage the server in order to use this command.',
+        content: t('config.role.missingPerms'),
         ephemeral: true,
       });
       return;
@@ -52,7 +52,7 @@ export const levels = subcommand({
 
     if (resolvedRole.id === interaction.guild.id) {
       await interaction.reply({
-        content: 'You cannot make @everyone a level role.',
+        content: t('config.role.everyone'),
         ephemeral: true,
         allowedMentions: { parse: [] },
       });
@@ -66,7 +66,7 @@ export const levels = subcommand({
         .has(PermissionFlagsBits.ManageRoles)
     ) {
       await interaction.reply({
-        content: 'Please ensure the bot has the permission to manage roles.',
+        content: t('config.role.manageRoles'),
         ephemeral: true,
       });
       return;
@@ -79,7 +79,7 @@ export const levels = subcommand({
 
     if (items.assignLevel && items.deassignLevel && items.assignLevel >= items.deassignLevel) {
       await interaction.reply({
-        content: `Using an assignLevel higher than or equal to a deassignLevel will not work: the role gets removed as soon as it gets added!\nDid you mean: \`assign-level:${items.deassignLevel} deassign-level:${items.assignLevel}\`?`,
+        content: t('config.role.error1', {items}),
         ephemeral: true,
       });
       return;
@@ -87,7 +87,7 @@ export const levels = subcommand({
 
     if (Object.values(items).every((x) => x === null)) {
       await interaction.reply({
-        content: 'You must specify at least one option for this command to do anything!',
+        content: t('config.role.missingOption'),
         ephemeral: true,
       });
       return;
@@ -104,7 +104,7 @@ export const levels = subcommand({
       if (item !== 0 && roleAssignmentsByLevel.length >= 3) {
         await interaction.reply({
           content:
-            'There is a maximum of 3 roles that can be assigned or deassigned from each level. Please remove some first.',
+            t('config.roles.maxRoles'),
           ephemeral: true,
         });
         return;
@@ -115,7 +115,7 @@ export const levels = subcommand({
     const roleAssignments = await fetchRoleAssignmentsByRole(interaction.guild, resolvedRole.id);
 
     const embed: APIEmbed = {
-      author: { name: 'Assign/Deassignments for this role' },
+      author: { name: t('config.role.roleAdded') },
       color: 0x00ae86,
       description: nameUtil.getRoleMention(interaction.guild.roles.cache, resolvedRole.id),
     };
@@ -131,14 +131,14 @@ export const levels = subcommand({
     if (!roleAssignLevels.every((o) => o === null)) {
       embed.fields = [
         ...(embed.fields ?? []),
-        { name: 'Assignment Levels', value: commaListsAnd(`${roleAssignLevels}`) },
+        { name: t('config.role.assignlevel'), value: commaListsAnd(`${roleAssignLevels}`) },
       ];
     }
 
     if (!roleDeassignLevels.every((o) => o === null)) {
       embed.fields = [
         ...(embed.fields ?? []),
-        { name: 'Deassignment Levels', value: commaListsAnd(`${roleDeassignLevels}`) },
+        { name: t('config.role.deassignlevel'), value: commaListsAnd(`${roleDeassignLevels}`) },
       ];
     }
 
