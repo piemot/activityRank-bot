@@ -48,19 +48,17 @@ export default command.basic({
 
     const fields = [
       {
-        name: 'Notify Levelup via DM',
-        value: 'If this is enabled, the bot will send you a DM when you level up.',
+        name: t('config.member.notifyDM'),
+        value: t('config.member.notifyDMDescription'),
       },
       {
-        name: 'Reaction Voting',
-        value: oneLine`
-        If this is enabled, reacting with the server's voteEmote, ${cachedGuild.db.voteEmote},
-        will give an upvote to the member that sent the message.`,
+        name: t('config.member.reactVote'),
+        value: t(`config.member.reactVoteDescription`, {value: cachedGuild.db.voteEmote}),
       },
     ];
 
     await interaction.reply({
-      embeds: [{ author: { name: 'Personal Settings' }, fields }],
+      embeds: [{ author: { name: t('config.member.personalSettings') }, fields }],
       components: [generateRow(interaction, cachedMember, cachedGuild), closeRow(interaction)],
     });
   },

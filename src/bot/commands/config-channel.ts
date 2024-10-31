@@ -103,7 +103,7 @@ const generateRow = (
   const r = [
     new ButtonBuilder().setLabel(t('config.channel.noXP')),
     new ButtonBuilder().setLabel(t('config.channel.noCommand')),
-    new ButtonBuilder().setLabel(t('config.channelcommandOnly')),
+    new ButtonBuilder().setLabel(t('config.channel.commandOnly')),
     new ButtonBuilder().setLabel(t('config.channel.joinChannel')),
     new ButtonBuilder().setLabel(t('config.channel.levelupChannel')),
   ];
