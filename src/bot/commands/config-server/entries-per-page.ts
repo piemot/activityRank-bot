@@ -35,7 +35,7 @@ export const entriesPerPage = subcommand({
     await guildModel.upsert({ entriesPerPage });
 
     await interaction.reply({
-      content: t('config.server.entriesPerPage'),
+      content: t('config.server.entriesPerPage', { entriesPerPage }),
       ephemeral: true,
     });
   },
