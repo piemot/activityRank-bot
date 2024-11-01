@@ -41,17 +41,17 @@ const generateRows = async (
     key: BooleanGuildKey;
   }[][] = [
     [
-      { label: 'Use Nicknames', key: 'showNicknames' },
-      { label: 'Reaction Voting', key: 'reactionVote' },
-      { label: 'Allow Muted XP', key: 'allowMutedXp' },
-      { label: 'Allow Deafened XP', key: 'allowDeafenedXp' },
-      { label: 'Allow Solo XP', key: 'allowSoloXp' },
+      { label: t('config.server.useNickname'), key: 'showNicknames' },
+      { label: t('config.server.reactVote'), key: 'reactionVote' },
+      { label: t('config.server.mutedXP'), key: 'allowMutedXp' },
+      { label: t('config.server.deafenedXP'), key: 'allowDeafenedXp' },
+      { label: t('config.server.soloXP'), key: 'allowSoloXp' },
     ],
     [
-      { label: 'TAAROLD', key: 'takeAwayAssignedRolesOnLevelDown' },
-      { label: 'Notify Via DM', key: 'notifyLevelupDm' },
-      { label: 'Notify in Last Active Channel', key: 'notifyLevelupCurrentChannel' },
-      { label: 'Include Levelup Message', key: 'notifyLevelupWithRole' },
+      { label: t('config.server.TAAROLDshort'), key: 'takeAwayAssignedRolesOnLevelDown' },
+      { label: t('config.server.notifyDM'), key: 'notifyLevelupDm' },
+      { label: t('config.server.lastChannel'), key: 'notifyLevelupCurrentChannel' },
+      { label: t('config.server.includeLVLup'), key: 'notifyLevelupWithRole' },
     ],
     [
       { emoji: '✍️', key: 'textXp' },
@@ -59,7 +59,7 @@ const generateRows = async (
       { emoji: '✉️', key: 'inviteXp' },
       { emoji: '❤️', key: 'voteXp' },
     ],
-    [{ label: 'Reset Deleted Members', key: 'resetDeletedMembers' }],
+    [{ label: t('config.server.reset'), key: 'resetDeletedMembers' }],
   ];
 
   const items = rows.map((group) =>
@@ -98,7 +98,7 @@ const generateRows = async (
         {
           type: ComponentType.Button,
           style: ButtonStyle.Danger,
-          label: 'Close',
+          label: t('config.server.close'),
           customId: closeButton.instanceId({ predicate: requireUser(interaction.user) }),
         },
       ],
@@ -117,7 +117,7 @@ export const set = subcommand({
       !interaction.member.permissionsIn(interaction.channel!).has(PermissionFlagsBits.ManageGuild)
     ) {
       await interaction.reply({
-        content: 'You need the permission to manage the server in order to use this command.',
+        content: t('config.server.missingPerm'),
         ephemeral: true,
       });
       return;
@@ -130,61 +130,49 @@ export const set = subcommand({
       color: 0x00ae86,
       fields: [
         {
-          name: 'Use Nicknames',
+          name: t('config.server.useNickname'),
           value:
-            'If this is enabled, nicknames will be used to represent members instead of their Discord usernames',
+            t('config.server.useNicknameDescription'),
         },
         {
-          name: 'Reaction Voting',
-          value: `If this is enabled, members will be permitted to vote using the server's voteEmote, ${cachedGuild.db.voteEmote}`,
+          name: t('config.server.reactVote'),
+          value: t('config.server.reactVoteDescription', {value: cachedGuild.db.voteEmote}),
         },
         {
-          name: 'Allow Muted XP',
-          value:
-            'If this is enabled, members will be permitted to gain XP in VCs, even when they are muted.',
+          name: t('config.server.mutedXP'),
+          value: t('config.server.mutedXPDescription'),
         },
         {
-          name: 'Allow Deafened XP',
-          value:
-            'If this is enabled, members will be permitted to gain XP in VCs, even when they are deafened.',
+          name: t('config.server.deafenedXP'),
+          value: t('config.server.deafenedXPDescription'),
         },
         {
-          name: 'Allow Solo XP',
-          value:
-            'If this is enabled, members will be permitted to gain XP in VCs, even when they are alone. Bots do not count.',
+          name: t('config.server.soloXP'),
+          value: t('config.server.soloXPDescrption'),
         },
         {
-          name: 'TAAROLD (Take Away Assigned Roles On Level Down)',
-          value:
-            'If this is enabled, the bot will remove roles when the member falls below their assignLevel.',
+          name: t('config.server.TAAROLDfull'),
+          value: t('TAAROLDDescription'),
         },
         {
-          name: 'Notify Via DM',
-          value: stripIndent`
-          If this is enabled, the bot will allow members to recieve levelup notifications via DM.
-          You cannot select this if either of the below two options are enabled, because they will take priority.`,
+          name: t('config.server.notifyDM'),
+          value: t('config.server.notifyDMDescription'),
         },
         {
-          name: 'Notify in Last Active Channel',
-          value: stripIndent`
-          If this is enabled, the bot will notify members of their levelups in their last used text channel.
-          You cannot select this if the below option is enabled, because it will take priority.`,
+          name: t('config.server.lastChannel'),
+          value: t('config.server.lastChannelDescription'),
         },
         {
-          name: 'Include Levelup Message',
-          value: stripIndent`
-          If this is enabled, when a role has a custom roleAssign message, the bot will also send the default levelup message.
-          Otherwise, it will only send the roleAssign message.`,
+          name: t('config.server.includeLVLup'),
+          value: t('config.server.includeLVLupDescription'),
         },
         {
           name: '✍️, 🎙️, ✉️, ❤️',
-          value: stripIndent`
-          These will enable or disable text, voice, invite, and upvoteXP respectively.
-          You may want to reset these categories, as disabling them will only hide them and prevent more from being added.`,
+          value: t('config.server.emojiDescription'),
         },
         {
-          name: 'Reset Deleted Members',
-          value: 'This will reset the XP of members when they leave the server.',
+          name: t('config.server.reset'),
+          value: t('config.server.resetDescription'),
         },
       ],
     };

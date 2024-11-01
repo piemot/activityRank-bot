@@ -33,7 +33,7 @@ export const cooldown = subcommand({
       !interaction.member.permissionsIn(interaction.channel!).has(PermissionFlagsBits.ManageGuild)
     ) {
       await interaction.reply({
-        content: 'You need the permission to manage the server in order to use this command.',
+        content: t('config.server.missingPerm'),
         ephemeral: true,
       });
       return;
@@ -45,7 +45,7 @@ export const cooldown = subcommand({
     };
     if (Object.values(items).every((x) => x === undefined)) {
       await interaction.reply({
-        content: 'You must specify at least one option for this command to do anything!',
+        content: t('config.server.missingOption'),
         ephemeral: true,
       });
       return;
@@ -59,16 +59,9 @@ export const cooldown = subcommand({
     await interaction.reply({
       embeds: [
         {
-          author: { name: 'Cooldown Values' },
+          author: { name: t('config.server.values') },
           color: 0x00ae86,
-          description: stripIndent`
-            Modified Cooldown Values! New values:
-      
-            Messages will only give XP if their author has not sent one in the last \`${pretty(
-              cachedGuild.db.textMessageCooldownSeconds,
-            )}\`.
-            Votes will have a cooldown of \`${pretty(cachedGuild.db.voteCooldownSeconds)}\`.
-            `,
+          description: t('config.server.modifiedCD', {items}),
         },
       ],
       ephemeral: true,
@@ -77,25 +70,25 @@ export const cooldown = subcommand({
   autocomplete: {
     async message({ interaction }) {
       await interaction.respond([
-        { name: 'No time', value: 0 },
-        { name: '5 seconds', value: 5 },
-        { name: '15 seconds', value: 15 },
-        { name: '30 seconds', value: 30 },
-        { name: '1 minute', value: 60 },
-        { name: '2 minutes', value: 120 },
+        { name: t('config.server.noCD'), value: 0 },
+        { name: t('config.server.5sec'), value: 5 },
+        { name: t('config.server.15sec'), value: 15 },
+        { name: t('config.server.30sec'), value: 30 },
+        { name: t('config.server.1min'), value: 60 },
+        { name: t('config.server.2min'), value: 120 },
       ]);
     },
     async vote({ interaction }) {
       await interaction.respond([
-        { name: '3 minutes', value: 60 * 3 },
-        { name: '5 minutes', value: 60 * 5 },
-        { name: '10 minutes', value: 60 * 10 },
-        { name: '30 minutes', value: 60 * 30 },
-        { name: '1 hour', value: 60 * 60 },
-        { name: '3 hours', value: 60 * 60 * 3 },
-        { name: '6 hours', value: 60 * 60 * 6 },
-        { name: '12 hours', value: 60 * 60 * 12 },
-        { name: '24 hours', value: 60 * 60 * 24 },
+        { name: t('config.server.3min'), value: 60 * 3 },
+        { name: t('config.server.5min'), value: 60 * 5 },
+        { name: t('config.server.10min'), value: 60 * 10 },
+        { name: t('config.server.30min'), value: 60 * 30 },
+        { name: t('config.server.1h'), value: 60 * 60 },
+        { name: t('config.server.3h'), value: 60 * 60 * 3 },
+        { name: t('config.server.6h'), value: 60 * 60 * 6 },
+        { name: t('config.server.12h'), value: 60 * 60 * 12 },
+        { name: t('config.server.24h'), value: 60 * 60 * 24 },
       ]);
     },
   },

@@ -27,7 +27,7 @@ export const vote = subcommand({
       !interaction.member.permissionsIn(interaction.channel!).has(PermissionFlagsBits.ManageGuild)
     ) {
       await interaction.reply({
-        content: 'You need the permission to manage the server in order to use this command.',
+        content: t('config.server.missingPerm'),
         ephemeral: true,
       });
       return;
@@ -41,7 +41,7 @@ export const vote = subcommand({
 
     if (Object.values(items).every((x) => x === undefined)) {
       await interaction.reply({
-        content: 'You must specify at least one option for this command to do anything!',
+        content: t('config.server.missingOption'),
         ephemeral: true,
       });
       return;
@@ -53,14 +53,9 @@ export const vote = subcommand({
     await interaction.reply({
       embeds: [
         {
-          author: { name: 'Vote Tag/Emote' },
+          author: { name: t('config.server.voteTitle') },
           color: 0x00ae86,
-          description: stripIndent`
-            Modified the server's settings!
-      
-            Vote Tag: \`${cachedGuild.db.voteTag}\`
-            Vote Emote: ${cachedGuild.db.voteEmote}
-            `,
+          description: t('config.server.modifiedVote', {items}),
         },
       ],
       ephemeral: true,

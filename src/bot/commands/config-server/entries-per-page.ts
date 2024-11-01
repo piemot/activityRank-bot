@@ -24,7 +24,7 @@ export const entriesPerPage = subcommand({
       !interaction.member.permissionsIn(interaction.channel).has(PermissionFlagsBits.ManageGuild)
     ) {
       await interaction.reply({
-        content: 'You need the permission to manage the server in order to use this command.',
+        content: t('config.server.missingPerm'),
         ephemeral: true,
       });
       return;
@@ -35,7 +35,7 @@ export const entriesPerPage = subcommand({
     await guildModel.upsert({ entriesPerPage });
 
     await interaction.reply({
-      content: `The server will now see \`${entriesPerPage}\` entries per page.`,
+      content: t('config.server.entriesPerPage'),
       ephemeral: true,
     });
   },
