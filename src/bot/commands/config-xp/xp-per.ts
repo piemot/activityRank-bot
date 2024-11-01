@@ -59,7 +59,7 @@ export const xpPer = subcommand({
         {
           author: { name: t('config.xp.xpValues') },
           color: 0x00ae86,
-          description: t('config.xp.modifiedXPValues', items),
+          description: t('config.xp.modifiedXPValues', cachedGuild.db),
         },
       ],
       ephemeral: true,
