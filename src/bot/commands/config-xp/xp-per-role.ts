@@ -58,7 +58,7 @@ export const xpPerRole = subcommand({
     if (Object.values(items).every((x) => x === undefined)) {
       const predicate = requireUser(interaction.user);
       await interaction.reply({
-        content: t('config.xp.resetXPper', role),
+        content: t('config.xp.resetXPper', { role }),
         ephemeral: true,
         components: [
           actionrow([
