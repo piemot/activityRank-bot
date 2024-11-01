@@ -149,7 +149,7 @@
     "TAAROLDfull": "TAAROLD (Take Away Assigned Roles On Level Down)",
     "TAAROLDDescription": "If this is enabled, the bot will remove roles when the member falls below their assignLevel.",
     "notifyDM": "Notify via DM",
-    "notifyDMDescription": "If this is enabled, the bot will allow members to recieve levelup notifications via DM.\nYou cannot select this if either of the below two options are enabled, because they will take priority.",
+    "notifyDMDescription": "If this is enabled, the bot will allow members to receive levelup notifications via DM.\nYou cannot select this if either of the below two options are enabled, because they will take priority.",
     "lastChannel": "Notify in last active channel",
     "lastChannelDescription": "If this is enabled, the bot will notify members of their levelups in their last used text channel.\nYou cannot select this if the below option is enabled, because it will take priority.",
     "includeLVLup": "Include Levelup Message",
