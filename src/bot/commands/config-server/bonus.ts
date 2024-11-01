@@ -55,7 +55,7 @@ export const bonus = subcommand({
         {
           author: { name: t('config.server.bonusTitle') },
           color: 0x00ae86,
-          description: t('config.bonus.modifiedBonus', {items}),
+          description: t('config.bonus.modifiedBonus', items),
         },
       ],
       ephemeral: true,
