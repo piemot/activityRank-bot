@@ -55,7 +55,7 @@ export const vote = subcommand({
         {
           author: { name: t('config.server.voteTitle') },
           color: 0x00ae86,
-          description: t('config.server.modifiedVote', {items}),
+          description: t('config.server.modifiedVote', cachedGuild.db),
         },
       ],
       ephemeral: true,
