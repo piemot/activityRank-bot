@@ -28,7 +28,7 @@ export const levelfactor = subcommand({
     resetGuildCache(interaction.guild).allMembers();
 
     await interaction.reply({
-      content: `Your server's levelfactor is now set to \`${levelFactor}\`.`,
+      content: t('config.xp.levelfactor', levelFactor),
       ephemeral: true,
     });
   },

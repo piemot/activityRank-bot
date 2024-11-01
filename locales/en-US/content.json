@@ -158,6 +158,33 @@
     "reset": "Reset Deleted Members",
     "resetDescription": "This will reset the XP of members when they leave the server.",
     "close": "Close"
+  },
+  "xp": {
+    "missingPerm": "You need the permission to manage the server in order to use this command.",
+    "missingOption": "You must specify at least one option for this command to do anything!",
+    "valueTitle": "Bonus XP Values",
+    "newSettings": "Modified Bonus XP Values! New values:\n\n{{bonusPerTextMessage}} xp per text message\n{{bonusPerVoiceMinute}} xp per minute in VC\n{{bonusPerVote}} xp per vote\n{{bonusPerInvite}} xp per invite",
+    "bonusEnd": "Ended bonus time.",
+    "bonusStart": "Bonus time has started! It will end <t:{{bonusUntilDate}}:R>",
+    "endNow": "End Now",
+    "1h": "1 Hour",
+    "3h": "3 Hours",
+    "12h": "12 Hours",
+    "1d": "1 Day",
+    "3d": "3 Days",
+    "1w": "1 Week",
+    "2w": "2 Weeks",
+    "levelfactor": "Your servers levelfactor is now set to {{levelFactor}}",
+    "cannotEveryone": "You cannot configure the xp-per @everyone. Try `/config-xp xp-per` instead.",
+    "resetXPper": "Are you sure you want to reset the special XP settings of {{role}}?",
+    "maxRoles": "There is a maximum of 5 roles that can be set as xp-per roles. Please remove some first.",
+    "textmessage": "textmessage",
+    "voiceminute": "voiceminute",
+    "invite": "invite",
+    "upvote": "upvote",
+    "newValue": "{{xp}} xp per {{per}} (**{{multi}}x** the default)",
+    "modified": "Modified XP Values for {{role}! New values:",
+    "notAffected": "Users XP will no longer be affected by {{data.role}}!"
   }
 },
 "upvote": {

@@ -41,7 +41,7 @@ export const xpPerRole = subcommand({
 
     if (role.id === interaction.guild.id) {
       await interaction.reply({
-        content: 'You cannot configure the xp-per @everyone. Try `/config-xp xp-per` instead.',
+        content: t('config.xp.cannotEveryone'),
         ephemeral: true,
         allowedMentions: { parse: [] },
       });
@@ -58,7 +58,7 @@ export const xpPerRole = subcommand({
     if (Object.values(items).every((x) => x === undefined)) {
       const predicate = requireUser(interaction.user);
       await interaction.reply({
-        content: `Are you sure you want to reset the special XP settings of ${role}?`,
+        content: t('config.xp.resetXPper', role),
         ephemeral: true,
         components: [
           actionrow([
@@ -100,7 +100,7 @@ export const xpPerRole = subcommand({
     if (parseInt(existingXpPerRoles.count) >= 5) {
       await interaction.reply({
         content:
-          'There is a maximum of 5 roles that can be set as xp-per roles. Please remove some first.',
+          t('config.xp.maxRoles'),
         ephemeral: true,
       });
       return;
@@ -114,15 +114,15 @@ export const xpPerRole = subcommand({
     };
 
     const keyToName: Record<XpPerEntry, string> = {
-      xpPerTextMessage: 'text message',
-      xpPerVoiceMinute: 'voice minute',
-      xpPerInvite: 'invite',
-      xpPerVote: 'upvote',
+      xpPerTextMessage: t('config.xp.textmessage'),
+      xpPerVoiceMinute: t('config.xp.voiceminute'),
+      xpPerInvite: t('config.xp.invite'),
+      xpPerVote: t('config.xp.upvote'),
     };
 
     const getMessage = (key: XpPerEntry): string | null => {
       if (roleModel.db[key] > 0) {
-        return `\`${roleModel.db[key]} xp\` per ${keyToName[key]} (**${relativeValue(key)}x** the default)`;
+        return t('info.xpPer', { xp: roleModel.db[key], per: keyToName[key], multi: relativeValue(key) });
       } else {
         return null;
       }
@@ -134,7 +134,7 @@ export const xpPerRole = subcommand({
           author: { name: 'Role XP Values' },
           color: 0x00ae86,
           description: [
-            `Modified XP Values for ${role}! New values:`,
+            t(`config.xp.modified`, role),
             '',
             getMessage('xpPerTextMessage'),
             getMessage('xpPerVoiceMinute'),
@@ -164,7 +164,7 @@ const resetSettings = component<{ role: Role }>({
     });
 
     await interaction.followUp({
-      content: `Users' XP will no longer be affected by ${data.role}!`,
+      content: t('config.xp.notAffected', data.role),
     });
   },
 });

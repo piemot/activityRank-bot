@@ -30,7 +30,7 @@ export const bonusXpPer = subcommand({
       !interaction.member.permissionsIn(interaction.channel).has(PermissionFlagsBits.ManageGuild)
     ) {
       await interaction.reply({
-        content: 'You need the permission to manage the server in order to use this command.',
+        content:t( 'config.xp.missingPerm'),
         ephemeral: true,
       });
       return;
@@ -44,7 +44,7 @@ export const bonusXpPer = subcommand({
     };
     if (Object.values(items).every((x) => x === undefined)) {
       await interaction.reply({
-        content: 'You must specify at least one option for this command to do anything!',
+        content: t('config.xp.missingOption'),
         ephemeral: true,
       });
       return;
@@ -56,16 +56,9 @@ export const bonusXpPer = subcommand({
     await interaction.reply({
       embeds: [
         {
-          author: { name: 'Bonus XP Values' },
+          author: { name: t('config.xp.valueTitle') },
           color: 0x00ae86,
-          description: stripIndent`
-            Modified Bonus XP Values! New values:
-      
-            \`${cachedGuild.db.bonusPerTextMessage} xp\` per text message
-            \`${cachedGuild.db.bonusPerVoiceMinute} xp\` per minute in VC
-            \`${cachedGuild.db.bonusPerVote} xp\` per vote
-            \`${cachedGuild.db.bonusPerInvite} xp\` per invite
-          `,
+          description: t('config.xp.newSettings', items),
         },
       ],
       ephemeral: true,
