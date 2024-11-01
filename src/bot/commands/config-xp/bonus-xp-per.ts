@@ -58,7 +58,7 @@ export const bonusXpPer = subcommand({
         {
           author: { name: t('config.xp.valueTitle') },
           color: 0x00ae86,
-          description: t('config.xp.newSettings', items),
+          description: t('config.xp.newSettings', cachedGuild.db),
         },
       ],
       ephemeral: true,
