@@ -42,7 +42,7 @@ export const bonustime = subcommand({
     }
 
     await interaction.reply({
-      content: t('config.xp.bonusStart', bonusUntilDate),
+      content: t('config.xp.bonusStart', { bonusUntilDate} ),
     });
   },
   autocomplete: {
