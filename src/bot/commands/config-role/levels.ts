@@ -79,7 +79,7 @@ export const levels = subcommand({
 
     if (items.assignLevel && items.deassignLevel && items.assignLevel >= items.deassignLevel) {
       await interaction.reply({
-        content: t('config.role.error1', {items}),
+        content: t('config.role.error1', items),
         ephemeral: true,
       });
       return;
