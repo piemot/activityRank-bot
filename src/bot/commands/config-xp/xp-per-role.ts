@@ -164,7 +164,7 @@ const resetSettings = component<{ role: Role }>({
     });
 
     await interaction.followUp({
-      content: t('config.xp.notAffected', data.role),
+      content: t('config.xp.notAffected', { role: data.role }),
     });
   },
 });
