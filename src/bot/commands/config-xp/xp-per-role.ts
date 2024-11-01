@@ -134,7 +134,7 @@ export const xpPerRole = subcommand({
           author: { name: 'Role XP Values' },
           color: 0x00ae86,
           description: [
-            t(`config.xp.modified`, role),
+            t(`config.xp.modified`, { role }),
             '',
             getMessage('xpPerTextMessage'),
             getMessage('xpPerVoiceMinute'),
