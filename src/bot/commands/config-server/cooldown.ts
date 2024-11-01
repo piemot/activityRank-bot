@@ -61,7 +61,7 @@ export const cooldown = subcommand({
         {
           author: { name: t('config.server.values') },
           color: 0x00ae86,
-          description: t('config.server.modifiedCD', {items}),
+          description: t('config.server.modifiedCD', cachedGuild.db),
         },
       ],
       ephemeral: true,
