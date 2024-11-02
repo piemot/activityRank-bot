@@ -190,7 +190,34 @@
     "memberInvited": "member invited to the server",
     "xpValues": "XP values",
     "modifiedXPValues": "Modified XP Values! New values:\n\n{{xpPerTextMessage}} xp per text message\n{{xpPerVoiceMinute}} xp per minute in VC\n{{xpPerVote}} xp per vote\n{{xpPerInvite}} xp per invite"
+  },
+"reset": {
+  "preparing": "Preparing to reset. Please wait...",
+  "cancelled": "Reset cancelled.",
+  "channel": "Are you sure you want to reset all the statistics of {{channelMention}}?",
+  "user": "Are you sure you want to reset all the statistics and XP of {{user}}?",
+  "deleted": {
+    "confirmationChannel": "Are you sure you want to reset all the statistics of **all {{channelIds.length}} deleted channels in the server**?\n\n**This cannot be undone.**",
+    "confirmationUser": "Are you sure you want to reset all the statistics of **all {{userIds.length}} users that have left the server**?\n\n**This cannot be undone.**"
+  },
+  "server": {
+    "missingAdmin": "You need the ADMINISTRATOR permission to use this command.",
+    "missingManage": "You need the permission to manage the server in order to use this command.",
+    "confirmationAll": "Are you sure you want to reset **all server settings, XP, and statistics?**\n\n**This cannot be undone.**",
+    "confirmationSettings": "Are you sure you want to reset all server settings to their default values?",
+    "messages": "Messages",
+    "voicetime": "Voicetime",
+    "votes": "Votes",
+    "invites": "Invites",
+    "bonus": "Bonus",
+    "type": "Which types of XP would you like to reset?",
+    "reset": "Reset",
+    "cancel": "Cancel",
+    "explanation": "",
+    "confirmationStats": "",
+    "confirmationXP": "Are you sure you want to reset **all server members XP**?\n\nThis will not reset associated statistics - try **/reset server statistics**! **This cannot be undone.**"
   }
+}
 },
 "upvote": {
   "notOnServer": "This member is not on this server."

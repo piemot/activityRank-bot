@@ -40,7 +40,7 @@ export const members = subcommand({
     );
 
     await interaction.reply({
-      content: `Are you sure you want to reset all the statistics of **all ${userIds.length} users that have left the server**?\n\n**This cannot be undone.**`,
+      content: t('reset.deleted.confirmationUser', userIds.length),
       ephemeral: true,
       components: [confirmRow],
     });
@@ -51,7 +51,7 @@ const { confirmButton, denyButton } = useConfirm<{ userIds: string[] }>({
   async confirmFn({ interaction, data }) {
     const job = new ResetGuildMembersStatisticsAndXp(interaction.guild, data.userIds);
 
-    await interaction.update({ content: 'Preparing to reset. Please wait...', components: [] });
+    await interaction.update({ content: t('reset.preparing'), components: [] });
 
     await job.plan();
     await job.logStatus(interaction);
@@ -64,6 +64,6 @@ const { confirmButton, denyButton } = useConfirm<{ userIds: string[] }>({
     await job.logStatus(interaction);
   },
   async denyFn({ interaction }) {
-    await interaction.update({ components: [], content: 'Reset cancelled.' });
+    await interaction.update({ components: [], content: t('reset.cancelled') });
   },
 });

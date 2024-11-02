@@ -27,7 +27,7 @@ export const statistics = subcommand({
       !interaction.member.permissionsIn(interaction.channel!).has(PermissionFlagsBits.ManageGuild)
     ) {
       await interaction.reply({
-        content: 'You need the permission to manage the server in order to use this command.',
+        content: t('reset.server.missingManage'),
         ephemeral: true,
       });
       return;
@@ -43,28 +43,28 @@ export const statistics = subcommand({
         customId: xpTypeselect.instanceId({ predicate }),
         options: [
           {
-            label: 'Messages',
+            label: t('reset.server.messages'),
             value: 'textMessage',
             emoji: '✍️',
           },
           {
-            label: 'Voice Time',
+            label: t('reset.server.voicetime'),
             value: 'voiceMinute',
             emoji: '🎙️',
           },
           {
-            label: 'Votes',
+            label: t('reset.server.votes'),
             value: 'vote',
             // TODO: emoji: cachedGuild.db.voteEmote,
             emoji: '❤️',
           },
           {
-            label: 'Invites',
+            label: t('reset.server.invites'),
             value: 'invite',
             emoji: '✉️',
           },
           {
-            label: 'Bonus',
+            label: t('reset.server.bonus'),
             value: 'bonus',
             emoji: '⭐',
           },
@@ -76,7 +76,7 @@ export const statistics = subcommand({
     ]);
 
     await interaction.reply({
-      content: 'Which types of XP would you like to reset?',
+      content: t('reset.server.type'),
       ephemeral: true,
       components: [typesRow],
     });
@@ -92,12 +92,12 @@ const xpTypeselect = component({
     const confirmRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
       new ButtonBuilder()
         .setCustomId(confirmButton.instanceId({ predicate, data: { tables: values } }))
-        .setLabel('Reset')
+        .setLabel(t('reset.server.reset'))
         .setEmoji('✅')
         .setStyle(ButtonStyle.Danger),
       new ButtonBuilder()
         .setCustomId(denyButton.instanceId({ predicate }))
-        .setLabel('Cancel')
+        .setLabel(t('reset.server.cancel'))
         .setEmoji('❎')
         .setStyle(ButtonStyle.Secondary),
     );
@@ -109,13 +109,14 @@ const xpTypeselect = component({
       invite: 'invite',
       bonus: 'bonus',
     };
-
+      //WOLF - reset.server.explanation
     const xpAssociatedMessage = values.includes('bonus')
       ? values.length > 1
         ? 'XP granted via bonus will be reset, but no other statistics will reset XP. You may be looking for `/reset server xp`.'
         : 'Since you are resetting the bonus statistic, this **will impact** the XP of any users that have bonus XP.'
       : 'XP associated with those statistics will not be reset - try `/reset server xp`!';
 
+      //WOLF - reset.server.confirmationStats
     await interaction.reply({
       content: commaListsAnd`Are you sure you want to reset all the **${values.map((v) => prettify[v])}** statistics?\n\n${xpAssociatedMessage} **This cannot be undone.**`,
       ephemeral: true,
@@ -128,7 +129,7 @@ const { confirmButton, denyButton } = useConfirm<{ tables: Table[] }>({
   async confirmFn({ interaction, data }) {
     const job = new ResetGuildStatistics(interaction.guild, data.tables);
 
-    await interaction.update({ content: 'Preparing to reset. Please wait...', components: [] });
+    await interaction.update({ content: t('reset.preparing'), components: [] });
 
     await job.plan();
     await job.logStatus(interaction);
@@ -141,6 +142,6 @@ const { confirmButton, denyButton } = useConfirm<{ tables: Table[] }>({
     await job.logStatus(interaction);
   },
   async denyFn({ interaction }) {
-    await interaction.update({ components: [], content: 'Reset cancelled.' });
+    await interaction.update({ components: [], content: t('reset.cancelled') });
   },
 });

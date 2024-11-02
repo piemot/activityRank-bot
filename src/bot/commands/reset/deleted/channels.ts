@@ -43,7 +43,7 @@ export const channels = subcommand({
     );
 
     await interaction.reply({
-      content: `Are you sure you want to reset all the statistics of **all ${channelIds.length} deleted channels in the server**?\n\n**This cannot be undone.**`,
+      content: t('reset.deleted.confirmationChannel', channelIds.length),
       ephemeral: true,
       components: [confirmRow],
     });
@@ -54,7 +54,7 @@ const { confirmButton, denyButton } = useConfirm<{ channelIds: string[] }>({
   async confirmFn({ interaction, data }) {
     const job = new ResetGuildChannelsStatistics(interaction.guild, data.channelIds);
 
-    await interaction.update({ content: 'Preparing to reset. Please wait...', components: [] });
+    await interaction.update({ content: t('reset.preparing'), components: [] });
 
     await job.plan();
     await job.logStatus(interaction);
@@ -68,6 +68,6 @@ const { confirmButton, denyButton } = useConfirm<{ channelIds: string[] }>({
     await job.logStatus(interaction);
   },
   async denyFn({ interaction }) {
-    await interaction.update({ components: [], content: 'Reset cancelled.' });
+    await interaction.update({ components: [], content: t('reset.cancelled') });
   },
 });

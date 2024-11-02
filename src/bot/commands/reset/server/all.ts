@@ -22,7 +22,7 @@ export const all = subcommand({
       !interaction.member.permissionsIn(interaction.channel!).has(PermissionFlagsBits.Administrator)
     ) {
       await interaction.reply({
-        content: 'You need the ADMINISTRATOR permission to use this command.',
+        content: t('reset.server.missingAdmin'),
         ephemeral: true,
       });
       return;
@@ -45,8 +45,7 @@ export const all = subcommand({
     );
 
     await interaction.reply({
-      content:
-        'Are you sure you want to reset **all server settings, XP, and statistics?**\n\n**This cannot be undone.**',
+      content: t('reset.server.confirmationAll'),
       ephemeral: true,
       components: [confirmRow],
     });
@@ -57,7 +56,7 @@ const { confirmButton, denyButton } = useConfirm({
   async confirmFn({ interaction }) {
     const job = new ResetGuildAll(interaction.guild);
 
-    await interaction.update({ content: 'Preparing to reset. Please wait...', components: [] });
+    await interaction.update({ content: t('reset.preparing'), components: [] });
 
     await job.plan();
     await job.logStatus(interaction);
@@ -71,6 +70,6 @@ const { confirmButton, denyButton } = useConfirm({
     await job.logStatus(interaction);
   },
   async denyFn({ interaction }) {
-    await interaction.update({ components: [], content: 'Reset cancelled.' });
+    await interaction.update({ components: [], content: t('reset.cancelled') });
   },
 });
