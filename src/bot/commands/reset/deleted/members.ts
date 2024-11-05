@@ -40,7 +40,7 @@ export const members = subcommand({
     );
 
     await interaction.reply({
-      content: t('reset.deleted.confirmationUser', userIds.length),
+      content: t('reset.deleted.confirmationUser', { size: userIds.length }),
       ephemeral: true,
       components: [confirmRow],
     });
