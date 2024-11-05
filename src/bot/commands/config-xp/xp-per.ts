@@ -30,7 +30,7 @@ export const xpPer = subcommand({
       !interaction.member.permissionsIn(interaction.channel).has(PermissionFlagsBits.ManageGuild)
     ) {
       await interaction.reply({
-        content: t('config.xp.missingPerm'),
+        content: t('missing.manageServer'),
         ephemeral: true,
       });
       return;
@@ -45,7 +45,7 @@ export const xpPer = subcommand({
 
     if (Object.values(items).every((x) => x === undefined)) {
       await interaction.reply({
-        content: t('config.xp.missingOption'),
+        content: t('missing.option'),
         ephemeral: true,
       });
       return;

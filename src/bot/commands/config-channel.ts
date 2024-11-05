@@ -201,7 +201,7 @@ export default command.basic({
       !interaction.member.permissionsIn(interaction.channel!).has(PermissionFlagsBits.ManageGuild)
     ) {
       await interaction.reply({
-        content: t('config.channel.missingPerms'),
+        content: t('missing.manageServer'),
         ephemeral: true,
       });
       return;

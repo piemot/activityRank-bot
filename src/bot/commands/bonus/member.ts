@@ -29,7 +29,7 @@ export const member = subcommand({
 
     if (!member) {
       await interaction.reply({
-        content: t('bonus.notInServer'),
+        content: t('missing.notOnServer'),
         ephemeral: true,
       });
       return;

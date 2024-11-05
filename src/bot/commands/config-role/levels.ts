@@ -42,7 +42,7 @@ export const levels = subcommand({
       !interaction.member.permissionsIn(interaction.channel).has(PermissionFlagsBits.ManageGuild)
     ) {
       await interaction.reply({
-        content: t('config.role.missingPerms'),
+        content: t('missing.manageServer'),
         ephemeral: true,
       });
       return;
@@ -87,7 +87,7 @@ export const levels = subcommand({
 
     if (Object.values(items).every((x) => x === null)) {
       await interaction.reply({
-        content: t('config.role.missingOption'),
+        content: t('config.role.missingOptio'),
         ephemeral: true,
       });
       return;

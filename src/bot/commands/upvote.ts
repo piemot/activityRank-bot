@@ -19,7 +19,7 @@ export default command.basic({
     const targetMember = interaction.options.getMember('member');
     if (!targetMember) {
       await interaction.reply({
-        content: t('upvote.notOnServer'),
+        content: t('missing.notOnServer'),
         ephemeral: true,
       });
       return;

@@ -19,10 +19,10 @@ export const all = subcommand({
   },
   async execute({ interaction }) {
     if (
-      !interaction.member.permissionsIn(interaction.channel!).has(PermissionFlagsBits.Administrator)
+      !interaction.member.permissionsIn(interaction.channel!).has(PermissionFlagsBits.ManageGuild)
     ) {
       await interaction.reply({
-        content: t('reset.server.missingAdmin'),
+        content: t('missing.manageServer'),
         ephemeral: true,
       });
       return;

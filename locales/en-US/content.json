@@ -31,7 +31,6 @@
     "TopChannels": "Top Channels"
   },
 "bonus": {
-  "notInServer": "This user is not in the server.",
   "cannotAddXP": "You cannot add bonus XP to bots.",
   "success": "Successfully gave/took {{change}} bonus XP to {{member}}!",
   "massXP": "This server already has a mass role operation running.",
@@ -61,6 +60,7 @@
     "channelSettings": "Channel Settings",
     "noXPenabled": "If this is enabled, no xp will be given in this channel."
   },
+},
   "member": {
     "notifyDM": "Notify Levelup via DM",
     "notifyDMDescription": "If this is enabled, the bot will send you a DM when you level up.",
@@ -70,7 +70,6 @@
   },
   "messages": {
     "select": "Message Selection",
-    "missingPerms": "You need the permission to manage the server in order to use this command.",
     "joinMessage": "Server Join Message",
     "joinMessageDescription": "The message to send when a member joins the server",
     "levelupMessage": "Levelup Message",
@@ -84,11 +83,9 @@
     "cleared": "Cleared {{value}}"
   },
   "role": {
-    "missingPerms": "You need the permission to manage the server in order to use this command.",
     "everyone": "You cannot make @everyone a level role.",
     "manageRoles": "Please ensure the bot has the permission to manage roles.",
     "error1": "Using an assignLevel higher than or equal to a deassignLevel will not work: the role gets removed as soon as it gets added!\nDid you mean: **assign-level:{{deassignLevel}} deassign-level:{{assignLevel}}**?",
-    "missingOption": "You must specify at least one option for this command to do anything!",
     "maxRoles": "There is a maximum of 3 roles that can be assigned or deassigned from each level. Please remove some first.",
     "roleAdded": "Assign/Deassignments for this role",
     "assignlevel": "Assignment Level",
@@ -111,8 +108,6 @@
     "addedDeassign": "Added deassignmessage for {{value}}"
   },
   "server": {
-    "missingPerm": "You need the permission to manage the server in order to use this command.",
-    "missingOption": "You must specify at least one option for this command to do anything!",
     "bonusTitle": "Bonus Tag/Emote",
     "voteTitle": "Vote Tag/Emote",
     "modifiedVote": "Modified the server's settings!\n\nVote Tag: {{voteTag}}\nVoteEmote {{voteEmote}}",
@@ -159,9 +154,12 @@
     "resetDescription": "This will reset the XP of members when they leave the server.",
     "close": "Close"
   },
+  "missing": {
+    "manageServer": "You need the permission to manage the server in order to use this command.",
+    "option": "You must specify at least one option for this command to do anything!",
+    "notOnServer": "This member is not on the server."
+  },
   "xp": {
-    "missingPerm": "You need the permission to manage the server in order to use this command.",
-    "missingOption": "You must specify at least one option for this command to do anything!",
     "valueTitle": "Bonus XP Values",
     "newSettings": "Modified Bonus XP Values! New values:\n\n{{bonusPerTextMessage}} xp per text message\n{{bonusPerVoiceMinute}} xp per minute in VC\n{{bonusPerVote}} xp per vote\n{{bonusPerInvite}} xp per invite",
     "bonusEnd": "Ended bonus time.",
@@ -201,8 +199,6 @@
     "confirmationUser": "Are you sure you want to reset all the statistics of **all {{size}} users that have left the server**?\n\n**This cannot be undone.**"
   },
   "server": {
-    "missingAdmin": "You need the ADMINISTRATOR permission to use this command.",
-    "missingManage": "You need the permission to manage the server in order to use this command.",
     "confirmationAll": "Are you sure you want to reset **all server settings, XP, and statistics?**\n\n**This cannot be undone.**",
     "confirmationSettings": "Are you sure you want to reset all server settings to their default values?",
     "messages": "Messages",
@@ -217,9 +213,5 @@
     "confirmationStats": "",
     "confirmationXP": "Are you sure you want to reset **all server members XP**?\n\nThis will not reset associated statistics - try **/reset server statistics**! **This cannot be undone.**"
   }
-}
-},
-"upvote": {
-  "notOnServer": "This member is not on this server."
 }
 }

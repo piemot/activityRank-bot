@@ -33,7 +33,7 @@ export const cooldown = subcommand({
       !interaction.member.permissionsIn(interaction.channel!).has(PermissionFlagsBits.ManageGuild)
     ) {
       await interaction.reply({
-        content: t('config.server.missingPerm'),
+        content: t('missing.manageServer'),
         ephemeral: true,
       });
       return;
@@ -45,7 +45,7 @@ export const cooldown = subcommand({
     };
     if (Object.values(items).every((x) => x === undefined)) {
       await interaction.reply({
-        content: t('config.server.missingOption'),
+        content: t('missing.option'),
         ephemeral: true,
       });
       return;

@@ -24,7 +24,7 @@ export const entriesPerPage = subcommand({
       !interaction.member.permissionsIn(interaction.channel).has(PermissionFlagsBits.ManageGuild)
     ) {
       await interaction.reply({
-        content: t('config.server.missingPerm'),
+        content: t('missing.manageServer'),
         ephemeral: true,
       });
       return;
