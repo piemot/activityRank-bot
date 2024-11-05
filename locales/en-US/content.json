@@ -197,7 +197,7 @@
   "channel": "Are you sure you want to reset all the statistics of {{channelMention}}?",
   "user": "Are you sure you want to reset all the statistics and XP of {{user}}?",
   "deleted": {
-    "confirmationChannel": "Are you sure you want to reset all the statistics of **all {{channelIds.length}} deleted channels in the server**?\n\n**This cannot be undone.**",
+    "confirmationChannel": "Are you sure you want to reset all the statistics of **all {{size}} deleted channels in the server**?\n\n**This cannot be undone.**",
     "confirmationUser": "Are you sure you want to reset all the statistics of **all {{userIds.length}} users that have left the server**?\n\n**This cannot be undone.**"
   },
   "server": {
