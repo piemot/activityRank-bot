@@ -58,7 +58,7 @@ export const member = subcommand({
     );
 
     await interaction.reply({
-      content: t('reset.user'),
+      content: t('reset.user', { user }),
       ephemeral: true,
       components: [confirmRow],
     });
