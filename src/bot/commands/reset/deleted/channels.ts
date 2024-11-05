@@ -43,7 +43,7 @@ export const channels = subcommand({
     );
 
     await interaction.reply({
-      content: t('reset.deleted.confirmationChannel', channelIds.length),
+      content: t('reset.deleted.confirmationChannel', { size: channelIds.length }),
       ephemeral: true,
       components: [confirmRow],
     });
