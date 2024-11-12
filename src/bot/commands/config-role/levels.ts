@@ -87,7 +87,7 @@ export const levels = subcommand({
 
     if (Object.values(items).every((x) => x === null)) {
       await interaction.reply({
-        content: t('config.role.missingOptio'),
+        content: t('missing.option'),
         ephemeral: true,
       });
       return;
