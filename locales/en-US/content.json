@@ -213,5 +213,17 @@
     "confirmationStats": "",
     "confirmationXP": "Are you sure you want to reset **all server members XP**?\n\nThis will not reset associated statistics - try **/reset server statistics**! **This cannot be undone.**"
   }
+},
+"inviter": {
+  "disabled": "Invite XP is disabled on this server.",
+  "ownInviter": "You cannot be the inviter of yourself.",
+  "alreadySet": "You have already set your inviter. This setting is unchangeable.",
+  "invited": "You cannot set your inviter to a person who has been invited by you.",
+  "bot": "You cannot set a bot as your inviter.",
+  "noXP": "The member you are trying to set as your inviter cannot be selected, because of an assigned noXP role.",
+  "confirmation": "Are you sure that {{inviter}} was the person who invited you?\n-# **You cannot change this setting once you confirm it.**",
+  "confirm": "Confirm",
+  "cancel": "Cancel",
+  "success": "Your inviter has been set successfully. You will both get 1 invite added to your stats."
 }
 }
