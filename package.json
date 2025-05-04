@@ -14,7 +14,8 @@
     "apps/api",
     "apps/bot",
     "apps/cli",
-    "apps/manager"
+    "apps/manager",
+    "apps/web"
   ],
   "contributors": [
     "@rapha01 (https://github.com/rapha01)",
