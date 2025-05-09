@@ -1,15 +1,34 @@
 import type { Route } from './+types/home';
 import { Plus } from '@phosphor-icons/react';
 import logo from '~/assets/logo.svg';
+import backgroundLight from '~/assets/background-light.svg';
+import backgroundDark from '~/assets/background-dark.svg';
 import { NavBar } from '~/components/nav';
+import { useDarkMode, useIsClient } from 'usehooks-ts';
 
 export function meta(_: Route.MetaArgs) {
   return [{ title: 'ActivityRank' }, { name: 'description', content: 'ActivityRank | Home' }];
 }
 
 export default function Home() {
+  const { isDarkMode } = useDarkMode({
+    initializeWithValue: typeof document !== 'undefined',
+    localStorageKey: 'darkMode',
+  });
+  const isClient = useIsClient();
+  const background = isDarkMode ? backgroundDark : backgroundLight;
+
   return (
-    <div className="flex flex-col items-center justify-center h-full">
+    <div className="flex flex-col items-center justify-center h-full *:z-10">
+      {isClient && (
+        <img
+          src={background}
+          alt=""
+          loading="lazy"
+          className="fixed top-0 left-0 w-full h-full"
+          style={{ filter: 'opacity(25%) blur(60px)' }}
+        />
+      )}
       <NavBar />
       <main className="flex-1 flex flex-col items-center justify-center h-full">
         <div className="flex flex-col items-center gap-12">
@@ -27,9 +46,15 @@ export default function Home() {
         </div>
       </main>
       <footer className="flex mb-2 max-w-md w-full items-center justify-evenly text-sm text-slate-600 dark:text-slate-400">
-        <a href="/privacy">Privacy Policy</a>
-        <a href="/about">About</a>
-        <a href="/terms">Terms and Conditions</a>
+        <a href="/privacy" className="hover:text-slate-700 dark:hover:text-slate-500">
+          Privacy Policy
+        </a>
+        <a href="/about" className="hover:text-slate-700 dark:hover:text-slate-500">
+          About
+        </a>
+        <a href="/terms" className="hover:text-slate-700 dark:hover:text-slate-500">
+          Terms and Conditions
+        </a>
       </footer>
     </div>
   );

@@ -9,6 +9,8 @@
   --color-theme-800: #38538c;
 }
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 html,
 body {
   @apply bg-slate-200 dark:bg-slate-900;
