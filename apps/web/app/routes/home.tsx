@@ -1,5 +1,5 @@
 import type { Route } from './+types/home';
-import { Plus } from '@phosphor-icons/react';
+import { Plus, GithubLogo } from '@phosphor-icons/react';
 import logo from '~/assets/logo.svg';
 import backgroundLight from '~/assets/background-light.svg';
 import backgroundDark from '~/assets/background-dark.svg';
@@ -45,15 +45,25 @@ export default function Home() {
           </a>
         </div>
       </main>
-      <footer className="flex mb-2 max-w-md w-full items-center justify-evenly text-sm text-slate-600 dark:text-slate-400">
-        <a href="/privacy" className="hover:text-slate-700 dark:hover:text-slate-500">
-          Privacy Policy
-        </a>
-        <a href="/about" className="hover:text-slate-700 dark:hover:text-slate-500">
-          About
-        </a>
-        <a href="/terms" className="hover:text-slate-700 dark:hover:text-slate-500">
-          Terms and Conditions
+      <footer className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] mb-2 px-2 w-full justify-items-center text-slate-600 dark:text-slate-400">
+        <div className="hidden md:block" />
+        <div className="flex md:grid md:grid-cols-3 w-full max-w-lg text-sm justify-between justify-items-center">
+          <a href="/privacy" className="hover:text-slate-700 dark:hover:text-slate-500">
+            Privacy Policy
+          </a>
+          <a href="/about" className="hover:text-slate-700 dark:hover:text-slate-500">
+            About
+          </a>
+          <a href="/terms" className="hover:text-slate-700 dark:hover:text-slate-500">
+            Terms and Conditions
+          </a>
+        </div>
+        <a
+          href="/github"
+          className="hidden md:flex justify-self-end gap-1 items-center font-mono text-sm hover:text-slate-700 dark:hover:text-slate-500"
+        >
+          <GithubLogo className="size-4" />
+          {__COMMIT_HASH__}
         </a>
       </footer>
     </div>
