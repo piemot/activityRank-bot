@@ -5,6 +5,7 @@ import backgroundLight from '~/assets/background-light.svg';
 import backgroundDark from '~/assets/background-dark.svg';
 import { NavBar } from '~/components/nav';
 import { useTernaryDarkMode, useIsClient } from 'usehooks-ts';
+import { Link } from 'react-router';
 
 export function meta(_: Route.MetaArgs) {
   return [{ title: 'ActivityRank' }, { name: 'description', content: 'ActivityRank | Home' }];
@@ -36,35 +37,35 @@ export default function Home() {
           <h1 className="font-semibold text-4xl md:text-6xl/relaxed text-transparent bg-clip-text bg-gradient-to-b from-theme-700 to-theme-800 dark:from-theme-200 dark:to-theme-400">
             ActivityRank
           </h1>
-          <a
-            href="/invite"
+          <Link
+            to="/invite"
             className="flex items-center gap-2 font-semibold text-xl px-12 py-4 rounded-xl bg-gradient-to-r from-theme-200 to-theme-400 text-slate-800"
           >
             Invite
             <Plus weight="bold" className="size-4" />
-          </a>
+          </Link>
         </div>
       </main>
       <footer className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] mb-2 px-4 w-full justify-items-center text-slate-600 dark:text-slate-400">
         <div className="hidden md:block" />
         <div className="flex md:grid md:grid-cols-3 w-full max-w-lg text-sm justify-between justify-items-center">
-          <a href="/privacy" className="hover:text-slate-700 dark:hover:text-slate-500">
+          <Link to="/privacy" className="hover:text-slate-700 dark:hover:text-slate-500">
             Privacy Policy
-          </a>
-          <a href="/about" className="hover:text-slate-700 dark:hover:text-slate-500">
+          </Link>
+          <Link to="/about" className="hover:text-slate-700 dark:hover:text-slate-500">
             About
-          </a>
-          <a href="/terms" className="hover:text-slate-700 dark:hover:text-slate-500">
+          </Link>
+          <Link to="/terms" className="hover:text-slate-700 dark:hover:text-slate-500">
             Terms and Conditions
-          </a>
+          </Link>
         </div>
-        <a
-          href="/github"
+        <Link
+          to="/github"
           className="hidden md:flex justify-self-end gap-1 items-center font-mono text-sm hover:text-slate-700 dark:hover:text-slate-500"
         >
           <GithubLogo className="size-4" />
           {__COMMIT_HASH__}
-        </a>
+        </Link>
       </footer>
     </div>
   );

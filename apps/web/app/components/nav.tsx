@@ -226,9 +226,9 @@ export function NavBar() {
         <div className="block md:hidden my-1 ml-1 p-2 size-12">
           <List className="size-full" onClick={() => setIsOpen(true)} />
         </div>
-        <a href="/" className="m-1 p-1 size-10">
+        <Link to="/" className="m-1 p-1 size-10">
           <img className="h-full" src={logo} alt="ActivityRank" />
-        </a>
+        </Link>
         <nav className="flex-1">
           <ul className="hidden md:flex gap-4">
             {navigation.map((nav) => (
@@ -237,10 +237,10 @@ export function NavBar() {
           </ul>
         </nav>
         <DarkModeSwitcher />
-        <a href="/login" className="flex gap-1 items-center mx-2">
+        <Link to="/login" className="flex gap-1 items-center mx-2">
           <span>Log In</span>
           <ArrowRight className="size-4" />
-        </a>
+        </Link>
       </header>
       <MobileDialogWrapper isOpen={isOpen} setIsOpen={setIsOpen}>
         <MobileDialog onClose={() => setIsOpen(false)} user={null} />
