@@ -1,9 +1,29 @@
-import { Fragment, useState, type PropsWithChildren } from 'react';
-import { ArrowRight, ArrowSquareOut, List, GithubLogo, X as XIcon } from '@phosphor-icons/react';
-import { Dialog, DialogPanel, DialogTitle, Transition, TransitionChild } from '@headlessui/react';
+import { useState, type PropsWithChildren, type ReactNode } from 'react';
+import {
+  ArrowRight,
+  ArrowSquareOut,
+  List,
+  GithubLogo,
+  X as XIcon,
+  Sun,
+  MoonStars,
+  Desktop,
+} from '@phosphor-icons/react';
+import {
+  Dialog,
+  DialogPanel,
+  DialogTitle,
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuItems,
+  Transition,
+  TransitionChild,
+} from '@headlessui/react';
 import logo from '~/assets/logo.svg';
 import { cn } from '~/lib/util';
 import { Link, useLocation } from 'react-router';
+import { useDarkMode, useTernaryDarkMode } from 'usehooks-ts';
 
 interface NavigationEntry {
   name: string;
@@ -127,6 +147,56 @@ function MobileDialog(props: { onClose: () => void; user: null }) {
   );
 }
 
+function DarkModeSwitcher() {
+  const { isDarkMode, setTernaryDarkMode } = useTernaryDarkMode({
+    initializeWithValue: typeof document !== 'undefined',
+    localStorageKey: 'darkMode',
+  });
+
+  function Item(props: { mode: 'light' | 'dark' | 'system'; children: ReactNode }) {
+    return (
+      <button
+        type="button"
+        onClick={() => setTernaryDarkMode(props.mode)}
+        className="flex w-full rounded-md items-center gap-2 px-4 py-2 text-slate-700 dark:text-slate-300 data-focus:bg-slate-100 dark:data-focus:bg-slate-800 data-focus:text-slate-900 dark:data-focus:text-slate-100 data-focus:outline-hidden"
+      >
+        {props.children}
+      </button>
+    );
+  }
+
+  return (
+    <Menu>
+      <MenuButton>
+        {isDarkMode ? <MoonStars className="size-5 mx-2" /> : <Sun className="size-5 mx-2" />}
+      </MenuButton>
+      <MenuItems
+        anchor="bottom"
+        className="mt-2 p-1 w-36 z-10 origin-top-right rounded-lg bg-white dark:bg-slate-900 shadow-lg ring-1 ring-black/5 transition focus:outline-hidden data-closed:scale-95 data-closed:transform data-closed:opacity-0 data-enter:duration-100 data-enter:ease-out data-leave:duration-75 data-leave:ease-in"
+      >
+        <MenuItem>
+          <Item mode="light">
+            <Sun />
+            Light
+          </Item>
+        </MenuItem>
+        <MenuItem>
+          <Item mode="dark">
+            <MoonStars />
+            Dark
+          </Item>
+        </MenuItem>
+        <MenuItem>
+          <Item mode="system">
+            <Desktop />
+            System
+          </Item>
+        </MenuItem>
+      </MenuItems>
+    </Menu>
+  );
+}
+
 export function NavBar() {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -166,6 +236,7 @@ export function NavBar() {
             ))}
           </ul>
         </nav>
+        <DarkModeSwitcher />
         <a href="/login" className="flex gap-1 items-center mx-2">
           <span>Log In</span>
           <ArrowRight className="size-4" />

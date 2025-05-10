@@ -9,18 +9,18 @@ import {
 
 import type { Route } from './+types/root';
 import './app.css';
-import { useDarkMode, useIsClient } from 'usehooks-ts';
+import { useTernaryDarkMode, useIsClient } from 'usehooks-ts';
 import { cn } from './lib/util';
 
 export function Layout({ children }: { children: React.ReactNode }) {
-  const { isDarkMode } = useDarkMode({
+  const { isDarkMode } = useTernaryDarkMode({
     initializeWithValue: typeof document !== 'undefined',
     localStorageKey: 'darkMode',
   });
   const isClient = useIsClient();
 
   return (
-    <html lang="en" className={cn({ dark: isDarkMode && isClient })}>
+    <html lang="en" className={cn({ dark: isDarkMode || !isClient })}>
       <head>
         <meta charSet="utf-8" />
         <link rel="icon" href="/favicon.png" />

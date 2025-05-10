@@ -4,14 +4,14 @@ import logo from '~/assets/logo.svg';
 import backgroundLight from '~/assets/background-light.svg';
 import backgroundDark from '~/assets/background-dark.svg';
 import { NavBar } from '~/components/nav';
-import { useDarkMode, useIsClient } from 'usehooks-ts';
+import { useTernaryDarkMode, useIsClient } from 'usehooks-ts';
 
 export function meta(_: Route.MetaArgs) {
   return [{ title: 'ActivityRank' }, { name: 'description', content: 'ActivityRank | Home' }];
 }
 
 export default function Home() {
-  const { isDarkMode } = useDarkMode({
+  const { isDarkMode } = useTernaryDarkMode({
     initializeWithValue: typeof document !== 'undefined',
     localStorageKey: 'darkMode',
   });
