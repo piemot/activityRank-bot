@@ -7,5 +7,6 @@ config/keys.json
 config/config.json
 config/privileges.json
 config/*.local.*
+.env.local
 
 docker/db/data
