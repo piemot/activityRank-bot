@@ -18,3 +18,22 @@ export function Title(props: PropsWithChildren) {
     </div>
   );
 }
+
+export function Section({ children }: PropsWithChildren) {
+  return <section className="p-2 pb-6 [font-variant-ligatures:none]">{children}</section>;
+}
+export function SectionHeader({ children }: PropsWithChildren) {
+  return <h2 className="pb-2 text-xl text-slate-600 dark:text-slate-400">{children}</h2>;
+}
+export function SectionBody({ children }: PropsWithChildren) {
+  return <section className="text-slate-900 dark:text-slate-200">{children}</section>;
+}
+export function BulletList({ children }: PropsWithChildren) {
+  return <ul className="list-disc pl-8">{children}</ul>;
+}
+export function List({ children }: PropsWithChildren) {
+  return <ul className="pl-8">{children}</ul>;
+}
+export function ListEntry({ children }: PropsWithChildren) {
+  return <li>{children}</li>;
+}
