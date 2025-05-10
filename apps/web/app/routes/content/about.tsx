@@ -18,7 +18,6 @@ function Social(params: StaffInfo['socials'][number]) {
 }
 
 function StaffInfoBlock(params: StaffInfo) {
-  console.log(params);
   return (
     <div className="w-full bg-gradient-to-br from-theme-400 to-theme-700 p-1 rounded-xl">
       <li className="w-full flex flex-col md:flex-row items-center gap-2 py-4 px-2 bg-slate-300 dark:bg-slate-800 rounded-xl">

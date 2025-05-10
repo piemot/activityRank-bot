@@ -68,7 +68,6 @@ export async function fetchStaffUsers(): Promise<StaffInfo[]> {
     const discordUser = await fetch(`https://discord.com/api/v10/users/${user.discordId}`, {
       headers,
     }).then((res) => res.json());
-    console.log('DUSR', discordUser);
 
     return {
       ...user,
