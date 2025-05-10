@@ -1,29 +1,3 @@
-@import url("./assets/font/font.css");
-@import "tailwindcss";
-
-@theme {
-  --color-theme-200: #55f6be;
-  --color-theme-400: #42e0f0;
-  --color-theme-700: #3e72cc;
-  --color-theme-800: #38538c;
-
-  --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-  --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
-  --font-mono: "Recursive Monospace", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-}
-
-@custom-variant dark (&:where(.dark, .dark *));
-
-html,
-body {
-  @apply bg-slate-200 dark:bg-slate-900;
-  @apply h-full;
-
-  @media (prefers-color-scheme: dark) {
-    color-scheme: dark;
-  }
-}
-
 /* reenable Tailwind's removal of list styles */
 .content ul {
   list-style: inside disc;
@@ -46,7 +20,6 @@ body {
   @variant dark {
     color: var(--color-theme-200);
     background-color: var(--color-slate-700);
-    border: none;
   }
 }
 

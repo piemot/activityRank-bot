@@ -45,7 +45,7 @@ export default function Home() {
           </a>
         </div>
       </main>
-      <footer className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] mb-2 px-2 w-full justify-items-center text-slate-600 dark:text-slate-400">
+      <footer className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] mb-2 px-4 w-full justify-items-center text-slate-600 dark:text-slate-400">
         <div className="hidden md:block" />
         <div className="flex md:grid md:grid-cols-3 w-full max-w-lg text-sm justify-between justify-items-center">
           <a href="/privacy" className="hover:text-slate-700 dark:hover:text-slate-500">
