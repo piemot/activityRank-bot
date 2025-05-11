@@ -29,6 +29,7 @@ import { command } from '#bot/commands.js';
 import { component, ComponentKey } from '#bot/util/registry/component.js';
 import { requireUserId } from '#bot/util/predicates.js';
 import type { TFunction } from 'i18next';
+import { emoji } from '#const/config.js';
 
 interface CacheInstance {
   window: 'rank' | 'topChannels';
@@ -209,7 +210,7 @@ function getPaginationComponents(
     components: [
       {
         type: ComponentType.Button,
-        emoji: '⬅',
+        emoji: { name: '⬅' },
         customId: pageButton.instanceId({
           data: { page: state.page - 1 },
           predicate: requireUserId(state.owner),
@@ -226,7 +227,7 @@ function getPaginationComponents(
       },
       {
         type: ComponentType.Button,
-        emoji: '➡️',
+        emoji: { name: '➡️' },
         customId: pageButton.instanceId({
           data: { page: state.page + 1 },
           predicate: requireUserId(state.owner),
@@ -319,7 +320,7 @@ async function generateRankCard(
 
   embed.addFields(
     {
-      name: `#${positions.xp} **${guildMemberInfo.name}** 🎖 ${Math.floor(levelProgression)}`,
+      name: `#${positions.xp} **${guildMemberInfo.name}** ${emoji('level')}${Math.floor(levelProgression)}`,
       value: infoStrings,
     },
     {

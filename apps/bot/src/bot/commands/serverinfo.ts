@@ -25,6 +25,7 @@ import { component, ComponentKey } from '#bot/util/registry/component.js';
 import { requireUser } from '#bot/util/predicates.js';
 import { actionrow, closeButton } from '#bot/util/component.js';
 import Cron from 'croner';
+import { emoji } from '#const/config.js';
 
 export default command({
   name: 'serverinfo',
@@ -61,11 +62,6 @@ async function render(
           { label: 'Roles', value: 'roles', default: windowName === 'roles' },
           { label: 'XP Settings', value: 'xpsettings', default: windowName === 'xpsettings' },
           {
-            label: 'No-Command Channels',
-            value: 'nocommandchannels',
-            default: windowName === 'nocommandchannels',
-          },
-          {
             label: 'No-Xp Channels',
             value: 'noxpchannels',
             default: windowName === 'noxpchannels',
@@ -87,7 +83,7 @@ async function render(
             predicate,
           }),
           style: ButtonStyle.Primary,
-          emoji: '⬅',
+          emoji: { name: '⬅' },
           disabled: disableComponents || pageNumber < 2,
         },
         {
@@ -104,7 +100,7 @@ async function render(
             predicate,
           }),
           style: ButtonStyle.Primary,
-          emoji: '➡️',
+          emoji: { name: '➡️' },
           disabled: disableComponents || pageNumber > 100,
         },
       ]),
@@ -302,7 +298,7 @@ const levels: Window = {
       color: 0x4fd6c8,
       description: `Levelfactor: ${cachedGuild.db.levelFactor}\n-# The levelfactor is the amount of extra XP each level needs.\n*XP needed to reach the next level (xp needed to reach this level from Level 1)*`,
       fields: levels.map((level) => ({
-        name: `🎖${level.number}`,
+        name: `${emoji('level')}${level.number}`,
         value: levelValue(
           level.number < 2
             ? '*All members start at Level 1.*'
@@ -351,54 +347,6 @@ const roles: Window = {
           inline: true,
         }))
         .slice(page.from - 1, page.to),
-    };
-  },
-};
-
-const nocommandchannels: Window = {
-  additionalComponents: () => [],
-  enablePagination: true,
-  async embed({ interaction, cachedGuild, page }) {
-    const description: string[] = [];
-    const isAdmin = interaction.memberPermissions.has('ManageGuild');
-    if (isAdmin) {
-      description.push(
-        `## No-Command Channels are __deprecated__.\n\nManage Application Command permissions in **[Server Settings](discord://-/guilds/${interaction.guild.id}/settings)** > **Integrations** > **ActivityRank**!\n`,
-      );
-    }
-
-    if (cachedGuild.db.commandOnlyChannel !== '0') {
-      description.push(
-        `:warning: The \`commandOnly\` channel is set. The bot will only respond in <#${cachedGuild.db.commandOnlyChannel}>.\n`,
-      );
-    }
-
-    const noCommandChannelIds = await guildChannelModel.getNoCommandChannelIds(interaction.guild);
-    const noCommandChannels = noCommandChannelIds.map((id) => ({
-      id,
-      channel: interaction.guild.channels.cache.get(id),
-    }));
-
-    description.push(
-      ...noCommandChannels
-        .sort((a, b) => (a.channel ? (b.channel ? a.channel.type - b.channel.type : 0) : -1))
-        .slice(page.from - 1, page.to)
-        .map(
-          (channel) =>
-            `- ${nameUtil.getChannelMention(interaction.guild.channels.cache, channel.id)}`,
-        ),
-    );
-
-    if (noCommandChannelIds.length > page.to)
-      description.push(`- *and ${noCommandChannelIds.length - page.to} more...*`);
-
-    return {
-      author: {
-        name: 'No-Command Channels',
-        icon_url: clientURL(interaction.client),
-      },
-      color: isAdmin ? 0xb75cff : 0x4fd6c8,
-      description: description.join('\n'),
     };
   },
 };
@@ -577,7 +525,6 @@ const windows = {
   general,
   levels,
   roles,
-  nocommandchannels,
   noxpchannels,
   noxproles,
   messages,

@@ -44,12 +44,8 @@
   "config-channel": {
     "oops": "Oops!",
     "deprecated": "## No-Command and Command-Only Channels are __deprecated__.\n\nManage Application Command permissions in **Server Settings ❯ Integrations ❯ ActivityRank** instead!\n\n*You can still **disable** No-Command and Command-Only channels.*'",
-    "noXP": "No XP",
-    "noXPDescription": "If this is enabled, no XP will be given in this channel.",
-    "noCommand": "No Commands",
-    "noCommandDescription": "If this is enabled, commands will not work in this channel.\n> **Note:** It is recommended to use the Discord native system in **Server Settings ❯ Integrations ❯ ActivityRank** instead",
-    "commandOnly": "Command Only",
-    "commandOnlyDescription": "If this is enabled, this will be the **only channel commands will work in**, unless you have the **Manage Server** permission.\n> **Note:** It is recommended to use the Discord native system in **Server Settings ❯ Integrations ❯ ActivityRank** instead.",
+    "noXP": "noXP",
+    "noXPDescription": "If this is enabled, no xp will be given in this channel.",
     "joinChannel": "Server Join Channel",
     "joinChannelDescription": "If this is enabled, server join messages will be sent to this channel.",
     "levelupChannel": "Levelup Channel",
@@ -67,14 +63,15 @@
   },
   "config-messages": {
     "select": "Message Selection",
+    "description": "**Adjust the server-wide messages that the bot sends when events are triggered.**\n## Available variables:\n* `<name>`: The username of the relevant user.\n* `<servername>`: The name of the server.\n* `<level>`: The new level of the relevant user.\n* `<mention>`: The @mention of the relevant user.\n* `<rolename>`: The name of the user's new role (on level up/level down).\n* `<rolemention>`: The @mention of the user's new role (on level up/level down).",
     "joinMessage": "Server Join Message",
     "joinMessageDescription": "The message to send when a member joins the server",
     "levelupMessage": "Levelup Message",
     "levelupMessageDescription": "The message to send when a member gains a level",
     "assignMessage": "Role Assign Message",
-    "assignMessageDescription": "The message to send when a member gains a role, unless overridden",
+    "assignMessageDescription": "The message to send when a member gains a role, unless overridden by a role-specific message",
     "deassignMessage": "Role Deassign Message",
-    "deassignMessageDescription": "The message to send when a member loses a role, unless overridden",
+    "deassignMessageDescription": "The message to send when a member loses a role, unless overridden by a role-specific message",
     "askClear": "Which message do you want to clear?",
     "toClear": "The message to clear",
     "cleared": "Cleared {{value}}"
@@ -127,30 +124,92 @@
     "12h": "12 Hours",
     "24h": "24 Hours",
     "entriesPerPage": "The server will now see `{{entriesPerPage}}` entries per page.",
-    "useNickname": "Use Nicknames",
-    "useNicknameDescription": "If this is enabled, nicknames will be used to represent members instead of their Discord usernames",
-    "reactVote": "Reaction Voting",
-    "reactVoteDescription": "If this is enabled, members will be permitted to vote using the server's voteEmote, {{value}}",
-    "mutedXP": "Allow Muted XP",
-    "mutedXPDescription": "If this is enabled, members will be permitted to gain XP in VCs, even when they are muted.",
-    "deafenedXP": "Allow deafened XP",
-    "deafenedXPDescription": "If this is enabled, members will be permitted to gain XP in VCs, even when they are deafened.",
-    "soloXP": "Allow solo XP",
-    "soloXPDescription": "If this is enabled, members will be permitted to gain XP in VCs, even when they are alone. Bots do not count.",
-    "TAAROLDshort": "TAAROLD",
-    "TAAROLDfull": "TAAROLD (Take Away Assigned Roles On Level Down)",
-    "TAAROLDDescription": "If this is enabled, the bot will remove roles when the member falls below their assignLevel.",
-    "notifyDM": "Notify via DM",
-    "notifyDMDescription": "If this is enabled, the bot will allow members to receive levelup notifications via DM.\nYou cannot select this if either of the below two options are enabled, because they will take priority.",
-    "lastChannel": "Notify in last active channel",
-    "lastChannelDescription": "If this is enabled, the bot will notify members of their levelups in their last used text channel.\nYou cannot select this if the below option is enabled, because it will take priority.",
-    "includeLVLup": "Include Levelup Message",
-    "includeLVLupDescription": "If this is enabled, when a role has a custom roleAssign message, the bot will also send the default levelup message.\nOtherwise, it will only send the roleAssign message.",
-    "emojiDescription": "These will enable or disable text, voice, invite, and upvoteXP respectively.\nYou may want to reset these categories, as disabling them will only hide them and prevent more from being added.",
-    "reset": "Reset Deleted Members",
-    "resetDescription": "This will reset the XP of members when they leave the server.",
-    "stickyRoles": "Give roles on rejoin",
-    "stickyRolesDescription": "This will give members that have left the server the appropriate roles for the level they had when they left.",
+    "settings": "Server Settings",
+    "showNicknames": {
+      "label": "Use Nicknames",
+      "description": "Display users' nicknames instead of their Discord usernames."
+    },
+    "reactionVote": {
+      "label": "Reaction Voting",
+      "description": "Allow members to give upvotes using the server's voteEmote, :heart:."
+    },
+    "takeAwayAssignedRolesOnLevelDown": {
+      "label": "Update Roles on Level Down",
+      "description": "Remove roles when a member loses XP."
+    },
+    "resetDeletedMembers": {
+      "label": "Reset Deleted Members",
+      "description": "Reset the XP of members when they leave the server."
+    },
+    "stickyLevelRoles": {
+      "label": "Give Roles on Rejoin",
+      "description": "Gives members that have left the server the appropriate roles for the level they had when they left."
+    },
+    "allowMutedXp": {
+      "label": "Muted XP",
+      "description": "Allow members to gain voice XP while muted."
+    },
+    "allowDeafenedXp": {
+      "label": "Deafened XP",
+      "description": "Allow members to gain voice XP while deafened."
+    },
+    "allowSoloXp": {
+      "label": "Solo XP",
+      "description": "Allow members to gain voice XP while alone in a voice channel. Bots don't count."
+    },
+    "notifyLevelupDm": {
+      "label": "Notify by DM",
+      "description": "Allow members to recieve levelup notifications by DM."
+    },
+    "notifyLevelupCurrentChannel": {
+      "label": "Notify in Last Active Channel",
+      "description": "Send levelup notifications in a member's last active text channel."
+    },
+    "notifyLevelupSetChannel": {
+      "label": "Notify in Channel",
+      "description": "Send levelup notifications to a specific channel."
+    },
+    "notifyLevelupWithRole": {
+      "label": "Include Levelup Message",
+      "description": "When a role has a custom roleAssign message, also send the default levelup message.\nOtherwise, it will only send the roleAssign message."
+    },
+    "textXp": {
+      "label": "✍️ Text XP"
+    },
+    "voiceXp": {
+      "label": "🎙️ Voice XP"
+    },
+    "inviteXp": {
+      "label": "✉️ Invite XP"
+    },
+    "voteXp": {
+      "label": "❤️ Upvote XP"
+    },
+    "button": {
+      "enabled": "Enabled",
+      "not-enabled": "Disabled",
+      "allowed": "Allowed",
+      "not-allowed": "Disallowed",
+      "clear": "Clear"
+    },
+    "page": {
+      "general": {
+        "label": "General",
+        "description": "General server-wide config options"
+      },
+      "voice": {
+        "label": "Voice Options",
+        "description": "Change when members gain voice XP"
+      },
+      "notify": {
+        "label": "Notifications",
+        "description": "Change where levelup messages are sent"
+      },
+      "types": {
+        "label": "XP Types",
+        "description": "Enable or disable types of XP"
+      }
+    },
     "close": "Close"
   },
   "missing": {
@@ -182,7 +241,7 @@
     "invite": "invite",
     "upvote": "upvote",
     "newValue": "`{{xp}} xp` per {{per}} (**{{multi}}x** the default)",
-    "modified": "Modified XP Values for {{role}! New values:",
+    "modified": "Modified XP Values for {{role}}! New values:",
     "notAffected": "Users XP will no longer be affected by {{role}}.",
     "xpValues": "XP values",
     "modifiedXPValues": "Modified XP Values! New values:\n\n* `{{xpPerTextMessage}} xp` per text message\n* `{{xpPerVoiceMinute}} xp` per minute in VC\n* `{{xpPerVote}} xp` per vote\n* `{{xpPerInvite}} xp` per invite"

@@ -34,6 +34,7 @@ import {
   type ComponentPredicateConfig,
 } from '#bot/util/registry/component.js';
 import { requireUser } from '#bot/util/predicates.js';
+import { emoji } from '#const/config.js';
 
 const _prettifyTime = {
   day: 'Today',
@@ -117,6 +118,7 @@ export default command({
 
 const windowSelect = component({
   type: ComponentType.StringSelect,
+  autoDestroy: true,
   async callback({ interaction }) {
     await execCacheSet(interaction, 'window', interaction.values[0] as Window);
   },
@@ -124,6 +126,7 @@ const windowSelect = component({
 
 const timeSelect = component({
   type: ComponentType.StringSelect,
+  autoDestroy: true,
   async callback({ interaction }) {
     await execCacheSet(interaction, 'time', interaction.values[0] as StatTimeInterval);
   },
@@ -131,6 +134,7 @@ const timeSelect = component({
 
 const orderSelect = component({
   type: ComponentType.StringSelect,
+  autoDestroy: true,
   async callback({ interaction }) {
     await execCacheSet(interaction, 'orderType', interaction.values[0] as OrderType);
   },
@@ -138,6 +142,7 @@ const orderSelect = component({
 
 const channelSelect = component({
   type: ComponentType.ChannelSelect,
+  autoDestroy: true,
   async callback({ interaction }) {
     await execCacheSet(interaction, 'channel', interaction.channels.first() as GuildChannel);
   },
@@ -145,6 +150,7 @@ const channelSelect = component({
 
 const pageButton = component<{ page: number }>({
   type: ComponentType.Button,
+  autoDestroy: true,
   async callback({ interaction, data: { page } }) {
     await execCacheSet(interaction, 'page', page);
   },
@@ -394,7 +400,7 @@ async function generateGuildMembers(
     embed.fields = [
       ...(embed.fields ?? []),
       {
-        name: `**#${page.from + i} ${memberRank.name}** \\🎖${Math.floor(
+        name: `**#${page.from + i} ${memberRank.name}** ${emoji('level')}${Math.floor(
           memberRank.levelProgression,
         )}`,
         value: `Total: ${memberRank.totalScore} XP ${getFieldScoreString(state.orderType)}`,
@@ -460,7 +466,7 @@ function getPaginationComponents(
   return actionrow([
     {
       type: ComponentType.Button,
-      emoji: '⬅',
+      emoji: { name: '⬅' },
       customId: pageButton.instanceId({
         data: { page: state.page - 1 },
         predicate: state.componentPredicate,
@@ -477,7 +483,7 @@ function getPaginationComponents(
     },
     {
       type: ComponentType.Button,
-      emoji: '➡️',
+      emoji: { name: '➡️' },
       customId: pageButton.instanceId({
         data: { page: state.page + 1 },
         predicate: state.componentPredicate,

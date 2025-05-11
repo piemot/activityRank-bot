@@ -2,6 +2,7 @@ import { readFile } from 'node:fs/promises';
 import { packageFile } from './paths.js';
 
 import { configLoader, schemas } from '@activityrank/cfg';
+import type { EmojiNames } from './emoji.generated.js';
 
 export const isProduction = process.env.NODE_ENV === 'production';
 const loader = () =>
@@ -20,6 +21,19 @@ export const privileges = await loader().load({
   schema: schemas.bot.privileges,
   secret: false,
 });
+export const emojiIds = await loader().load({
+  name: 'emoji',
+  schema: schemas.bot.emojis,
+  secret: false,
+});
+
+export function emoji(name: EmojiNames) {
+  const id = emojiIds[name];
+  if (!id) {
+    throw new Error(`Failed to resolve bot emoji "${name}".`);
+  }
+  return `<:${name}:${id}>`;
+}
 
 const pkgfile = await readFile(packageFile);
 const pkg = JSON.parse(pkgfile.toString());
