@@ -9,7 +9,10 @@
     "typecheck": "react-router typegen && tsc"
   },
   "dependencies": {
+    "@activityrank/database": "workspace:*",
     "@headlessui/react": "^2.2.2",
+    "@oslojs/crypto": "^1.0.1",
+    "@oslojs/encoding": "^1.1.0",
     "@phosphor-icons/react": "^2.1.7",
     "@react-router/node": "^7.5.3",
     "@react-router/serve": "^7.5.3",
