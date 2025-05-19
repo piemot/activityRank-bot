@@ -35,7 +35,12 @@ function PatchnoteItem({ patchnote }: { patchnote: Patchnote }) {
             <span className="flex-1 text-sm text-slate-700 dark:text-slate-300 text-left">
               {patchnote.title}
             </span>
-            <CaretDown className={cn('size-4 justify-self-end transition', open && 'rotate-180')} />
+            <CaretDown
+              className={cn(
+                'size-4 justify-self-end transition text-slate-800 dark:text-slate-300',
+                open && 'rotate-180',
+              )}
+            />
           </DisclosureButton>
           <DisclosurePanel
             transition
