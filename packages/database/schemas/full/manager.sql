@@ -57,6 +57,12 @@ CREATE TABLE `productKey` (
   PRIMARY KEY (`key`)
 );
 
+CREATE TABLE `session` (
+  `id` varchar(255) NOT NULL PRIMARY KEY,
+  `user_id` bigint(20) NOT NULL REFERENCES web_user(id),
+  `expires_at` datetime NOT NULL
+);
+
 CREATE TABLE `setting` (
   `id` varchar(64) NOT NULL,
   `value` varchar(4096) NOT NULL DEFAULT '',
@@ -67,4 +73,11 @@ CREATE TABLE `userRoute` (
   `userId` bigint NOT NULL DEFAULT '0',
   `dbShardId` smallint NOT NULL DEFAULT '0',
   PRIMARY KEY (`userId`)
+);
+
+CREATE TABLE `web_user` (
+  `id` bigint(20) NOT NULL,
+  `username` varchar(32) NOT NULL,
+  `avatar_hash` varchar(32) DEFAULT NULL,
+  PRIMARY KEY (`id`)
 );
