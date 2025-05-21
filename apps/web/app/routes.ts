@@ -13,4 +13,8 @@ export default [
   route('/support', 'routes/redirects/support.ts'),
   route('/invite', 'routes/redirects/invite.ts'),
   route('/premium', 'routes/redirects/premium.ts'),
+
+  route('/login', 'routes/auth/login.ts'),
+  route('/auth/callback', 'routes/auth/callback.ts'),
+  route('/logout', 'routes/auth/logout.ts'),
 ] satisfies RouteConfig;

@@ -1,8 +1,14 @@
-import { manager } from './database.js';
 import { encodeBase32LowerCaseNoPadding, encodeHexLowerCase } from '@oslojs/encoding';
 import { sha256 } from '@oslojs/crypto/sha2';
+import cookie from 'cookie';
+import { manager } from './database';
 
-// based on Lucia: https://lucia-auth.com/sessions/basic-api/mysql
+// Cookies are manually handled here because the `react-router` session & cookie
+// APIs got in the way a bit too much. Super useful for simpler cookies though!
+// This file is based on Lucia: https://lucia-auth.com/sessions/basic-api/mysql
+
+// 30 days
+const COOKIE_EXPIRY_TIME = 1000 * 60 * 60 * 24 * 30;
 
 export function generateSessionToken(): string {
   const bytes = new Uint8Array(20);
@@ -17,7 +23,7 @@ export async function createSession(token: string, userId: string): Promise<Sess
     id: sessionId,
     userId,
     // in one month
-    expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30),
+    expiresAt: new Date(Date.now() + COOKIE_EXPIRY_TIME),
   };
   await manager.db
     .insertInto('session')
@@ -67,7 +73,7 @@ export async function validateSessionToken(token: string): Promise<SessionValida
 
   if (Date.now() >= session.expiresAt.getTime() - 1000 * 60 * 60 * 24 * 15) {
     // session needs to be renewed
-    session.expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24 * 30);
+    session.expiresAt = new Date(Date.now() + COOKIE_EXPIRY_TIME);
     await manager.db
       .updateTable('session')
       .set({ expires_at: session.expiresAt })
@@ -84,6 +90,35 @@ export async function invalidateSession(sessionId: string): Promise<void> {
 
 export async function invalidateAllSessions(userId: string): Promise<void> {
   await manager.db.deleteFrom('session').where('user_id', '=', userId).execute();
+}
+
+const SESSION_COOKIE_KEY = 'session';
+
+export function getSessionId(req: Request): string | null {
+  const cookieHeader = req.headers.get('Cookie');
+  const cookies = cookieHeader ? cookie.parse(cookieHeader) : null;
+  return cookies?.[SESSION_COOKIE_KEY] ?? null;
+}
+
+export function getSessionCookieHeaders(token: string, expiresAt: Date): Headers {
+  const options: cookie.SerializeOptions = {
+    path: '/',
+    httpOnly: true,
+    expires: expiresAt,
+    sameSite: 'lax',
+    secure: import.meta.env.PROD, // only enable secure when deployed over HTTPS
+  };
+  return new Headers({ 'Set-Cookie': cookie.serialize(SESSION_COOKIE_KEY, token, options) });
+}
+export function getDeleteSessionCookieHeaders(): Headers {
+  const options: cookie.SerializeOptions = {
+    path: '/',
+    httpOnly: true,
+    maxAge: 0,
+    sameSite: 'lax',
+    secure: import.meta.env.PROD, // only enable secure when deployed over HTTPS
+  };
+  return new Headers({ 'Set-Cookie': cookie.serialize(SESSION_COOKIE_KEY, '', options) });
 }
 
 export type SessionValidationResult =
