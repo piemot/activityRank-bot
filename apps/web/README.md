@@ -1,45 +1,66 @@
-# Welcome to React Router!
+<!-- markdownlint-disable-file MD033 -->
+<!-- markdownlint-disable-next-line MD041 -->
+<div align="center">
 
-A modern, production-ready template for building full-stack React applications using React Router.
+![ActivityRank Wordmark](https://raw.githubusercontent.com/activityrankbot/assets/main/banners/wordmark.png)
 
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/remix-run/react-router-templates/tree/main/default)
+# ActivityRank Web
 
-## Features
+[![License](https://img.shields.io/github/license/Rapha01/activityRank-bot?style=for-the-badge)](https://github.com/Rapha01/activityRank-bot/blob/main/LICENSE.txt)
+[![Support Server](https://img.shields.io/discord/534598374985302027?style=for-the-badge&logo=discord&label=support%20server&link=https%3A%2F%2Factivityrank.me/support)](https://activityrank.me/support)
 
-- 🚀 Server-side rendering
-- ⚡️ Hot Module Replacement (HMR)
-- 📦 Asset bundling and optimization
-- 🔄 Data loading and mutations
-- 🔒 TypeScript by default
-- 🎉 TailwindCSS for styling
-- 📖 [React Router docs](https://reactrouter.com/)
+</div>
+
+This is the directory containing the ActivityRank website.
+
+---
+
 
 ## Getting Started
 
-### Installation
+> [!IMPORTANT]
+> If you only want to use the bot, invite it to your Discord server with [this link.](https://activityrank.me/invite)
 
-Install the dependencies:
+### Prerequisites
 
-```bash
-npm install
-```
+Before you start developing, make sure you have the following installed:
 
-### Development
+* Node.js (v20.x or higher required)
+* Pnpm
 
-Start the development server with HMR:
+### Setting Up the Project
 
-```bash
-npm run dev
-```
+1. Clone the repository:
 
-Your application will be available at `http://localhost:5173`.
+    ```sh
+    git clone https://github.com/Rapha01/activityRank-bot.git activityrank
+    cd activityrank
+    ```
+
+2. Install dependencies:
+
+    ```sh
+    pnpm --filter=web install
+    ```
+
+3. Add secrets:
+
+    Populate the [`.env.local`](./.env.local) file, based on the template in [`.env`](./.env).
+
+4. Start the development server:
+
+    ```sh
+    pnpm --filter=web run dev
+    ```
+
+The development website will be available at [`http://localhost:5173`](http://localhost:5173).
 
 ## Building for Production
 
 Create a production build:
 
 ```bash
-npm run build
+pnpm --filter=web run build
 ```
 
 ## Deployment
@@ -54,34 +75,33 @@ docker build -t my-app .
 # Run the container
 docker run -p 3000:3000 my-app
 ```
+## Contributing
 
-The containerized application can be deployed to any platform that supports Docker, including:
+We welcome contributions! If you’d like to contribute, follow these steps:
 
-- AWS ECS
-- Google Cloud Run
-- Azure Container Apps
-- Digital Ocean App Platform
-- Fly.io
-- Railway
+1. Fork the repository and clone it to your local machine.
+2. Make your changes in a separate branch.
+3. Run tests and linting to ensure your code is in good shape.
+4. Create a pull request with a clear explanation of what you’ve changed.
 
-### DIY Deployment
+For large changes, it's a good idea to discuss them first by opening an issue.
 
-If you're familiar with deploying Node applications, the built-in app server is production-ready.
+Feel free to contact a maintainer on Discord -
+send a message request to [`@piemot`](https://discord.com/users/270273690074087427)
+or ask around in the [support server](https://activityrank.me/support).
 
-Make sure to deploy the output of `npm run build`
+## License
 
-```
-├── package.json
-├── package-lock.json (or pnpm-lock.yaml, or bun.lockb)
-├── build/
-│   ├── client/    # Static assets
-│   └── server/    # Server-side code
-```
+This project is licensed under the AGPL v3.0 License - see the [LICENSE](LICENSE.txt) file for details.
 
-## Styling
+## Known Issues
 
-This template comes with [Tailwind CSS](https://tailwindcss.com/) already configured for a simple default starting experience. You can use whatever CSS framework you prefer.
+1.  Cookies are used for authentication purposes. To prevent CSRF (Cross-Site Request Forgery) attacks,
+    the `SameSite=Lax` attribute is used on all security-critical cookies.
+    Older browsers such as Internet Explorer 11 or older may not respect this attribute.
 
----
+    See the [Remix docs](https://remix.run/docs/en/main/guides/browser-support#does-remix-implement-csrf-protection)
+    for more details.
 
-Built with ❤️ using React Router.
+    I'm not averse to adding more CSRF protection features - a good place to start looking would be
+    [this article by Sergio Xalambrí](https://sergiodxa.com/articles/adding-csrf-protection-to-remix)
