@@ -5,8 +5,7 @@ CREATE TABLE `session` (
 );
 
 CREATE TABLE `web_user` (
-  `id` bigint(20) NOT NULL,
-  `username` varchar(32) NOT NULL,
-  `avatar_hash` varchar(32) DEFAULT NULL,
-  PRIMARY KEY (`id`)
+  `id` bigint(20) NOT NULL PRIMARY KEY,
+  `username` varchar(32) NOT NULL UNIQUE,
+  `avatar_hash` varchar(32) DEFAULT NULL
 );

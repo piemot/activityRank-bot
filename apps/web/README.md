@@ -1,5 +1,3 @@
-<!-- markdownlint-disable-file MD033 -->
-<!-- markdownlint-disable-next-line MD041 -->
 <div align="center">
 
 ![ActivityRank Wordmark](https://raw.githubusercontent.com/activityrankbot/assets/main/banners/wordmark.png)
@@ -53,7 +51,7 @@ Before you start developing, make sure you have the following installed:
     pnpm --filter=web run dev
     ```
 
-The development website will be available at [`http://localhost:5173`](http://localhost:5173).
+The development website will be available at [`http://localhost:3000`](http://localhost:3000).
 
 ## Building for Production
 
@@ -63,18 +61,6 @@ Create a production build:
 pnpm --filter=web run build
 ```
 
-## Deployment
-
-### Docker Deployment
-
-To build and run using Docker:
-
-```bash
-docker build -t my-app .
-
-# Run the container
-docker run -p 3000:3000 my-app
-```
 ## Contributing
 
 We welcome contributions! If you’d like to contribute, follow these steps:
@@ -93,15 +79,3 @@ or ask around in the [support server](https://activityrank.me/support).
 ## License
 
 This project is licensed under the AGPL v3.0 License - see the [LICENSE](LICENSE.txt) file for details.
-
-## Known Issues
-
-1.  Cookies are used for authentication purposes. To prevent CSRF (Cross-Site Request Forgery) attacks,
-    the `SameSite=Lax` attribute is used on all security-critical cookies.
-    Older browsers such as Internet Explorer 11 or older may not respect this attribute.
-
-    See the [Remix docs](https://remix.run/docs/en/main/guides/browser-support#does-remix-implement-csrf-protection)
-    for more details.
-
-    I'm not averse to adding more CSRF protection features - a good place to start looking would be
-    [this article by Sergio Xalambrí](https://sergiodxa.com/articles/adding-csrf-protection-to-remix)

@@ -1,0 +1,82 @@
+@import "tailwindcss";
+
+@theme {
+  --color-theme-200: #55f6be;
+  --color-theme-400: #42e0f0;
+  --color-theme-700: #3e72cc;
+  --color-theme-800: #38538c;
+}
+
+@theme inline {
+  --font-sans: "Manrope Variable";
+  --font-mono: "Recursive Variable";
+  --font-mono--font-variation-settings: "MONO" 1;
+}
+
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+
+:root {
+  @apply bg-slate-200 dark:bg-slate-900;
+  @apply h-full;
+}
+
+body {
+  @apply h-full;
+}
+
+/* reenable Tailwind's removal of list styles */
+.content
+  ul {
+  list-style: inside disc;
+}
+
+.content ol {
+  list-style: inside decimal;
+}
+
+.content code {
+  padding: 2px 4px;
+  font-size: 90%;
+  color: var(--color-theme-700);
+
+  border-style: var(--tw-border-style);
+  border-color: var(--color-slate-400);
+  border-width: 1px;
+
+  border-radius: 4px;
+
+  @variant dark {
+    color: var(--color-theme-200);
+    background-color: var(--color-slate-700);
+    border: none;
+  }
+}
+
+.content a {
+  color: transparent;
+  background-clip: text;
+  background-image: linear-gradient(
+    to bottom right,
+    var(--color-theme-200) 0%,
+    var(--color-theme-700) 100%
+  );
+}
+
+.content h2 {
+  font-size: var(--text-lg);
+  line-height: var(--tw-leading, var(--text-lg--line-height));
+  padding-block: calc(var(--spacing) * 2);
+}
+
+.content li > p {
+  display: inline;
+}
+.content ul > p {
+  display: inline;
+}
+
+.content * {
+  /* disable ligatures (like (c) becoming ©️) */
+  font-variant-ligatures: none;
+}
+
