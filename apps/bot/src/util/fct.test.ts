@@ -1,5 +1,5 @@
-import { describe, it, expect, vi } from 'vitest';
-import { getVoteMultiplier } from './fct.js';
+import { describe, expect, it, vi } from 'vitest';
+import { getVoteMultiplier } from './fct.ts';
 
 vi.stubGlobal('Date', { now: () => 1650000000000 });
 

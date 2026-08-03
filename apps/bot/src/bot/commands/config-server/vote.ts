@@ -1,8 +1,7 @@
 import { PermissionFlagsBits } from 'discord.js';
-import { stripIndent } from 'common-tags';
-import { getGuildModel } from '../../models/guild/guildModel.js';
-import { parseEmojiString } from '#bot/util/emoji.js';
-import { command } from '#bot/commands.js';
+import { command } from '#bot/commands.ts';
+import { parseEmojiString } from '#bot/util/emoji.ts';
+import { getGuildModel } from '../../models/guild/guildModel.ts';
 
 export default command({
   name: 'config-server vote',
@@ -32,7 +31,7 @@ export default command({
       embeds: [
         {
           author: { name: t('config-server.voteTitle') },
-          color: 0x00ae86,
+          color: 0x01c3d9,
           description: t('config-server.modifiedVote', cachedGuild.db),
         },
       ],

@@ -1,24 +1,20 @@
-import fct from '../../util/fct.js';
-import { time, type BaseMessageOptions, type ChatInputCommandInteraction } from 'discord.js';
+import { DurationFormat } from '@formatjs/intl-durationformat';
 import { Time } from '@sapphire/duration';
-import { getGuildModel } from '#bot/models/guild/guildModel.js';
-import { isPrivileged } from '#const/config.js';
-import { getMemberModel } from '#bot/models/guild/guildMemberModel.js';
-import { PATREON_COMPONENTS, PATREON_URL } from './constants.js';
-import { RESET_GUILD_IDS } from '#bot/models/resetModel.js';
-import type { PartiallyRequired } from './typescript.js';
-
-const premiumLowersCooldownMessage = `You can significantly lower this cooldown by supporting the bot and choosing the proper patreon tier for your needs. You can find further info about it [on our Patreon](<${PATREON_URL}>).`;
-
-const activeStatCommandCooldown = (cd: number, next: Date) =>
-  `You can use stat commands only once per ${Math.floor(
-    cd / 1000,
-  )} seconds. You can use it again ${time(next, 'R')}.`;
-
-const activeResetServerCommandCooldown = (cd: number, next: Date) =>
-  `You can start a server reset only once every ${Math.floor(
-    cd / 1000,
-  )} seconds. You can start another reset ${time(next, 'R')}.`;
+import {
+  type APIMessageTopLevelComponent,
+  type ChatInputCommandInteraction,
+  MessageFlags,
+  time,
+} from 'discord.js';
+import type { TFunction } from 'i18next';
+import { Temporal } from 'temporal-polyfill';
+import { getMemberModel } from '#bot/models/guild/guildMemberModel.ts';
+import { getGuildModel } from '#bot/models/guild/guildModel.ts';
+import { RESET_GUILD_IDS } from '#bot/models/resetModel.ts';
+import { emoji, getStaffEntitlement } from '#const/config.ts';
+import fct, { hasValidEntitlement } from '../../util/fct.ts';
+import { section, textDisplay } from './component.ts';
+import { PATREON_BUTTON, PATREON_URL, PREMIUM_BUTTON } from './constants.ts';
 
 /**
  * Calculates the remaining wait time and the next trigger time based on the last recorded date and a cooldown period.
@@ -42,18 +38,35 @@ export function getWaitTime(lastDate: Date | number | undefined | null, cooldown
   return { remaining, next: new Date(now + remaining) };
 }
 
+const ALLOW = { allowed: true, denied: false };
+const DENY = { allowed: false, denied: true };
+
 export async function handleStatCommandsCooldown(
+  t: TFunction<'command-content'>,
   interaction: ChatInputCommandInteraction<'cached'>,
 ): Promise<{ denied: boolean; allowed: boolean }> {
-  const res = (allowed: boolean) => ({ allowed, denied: !allowed });
-
-  if (isPrivileged(interaction.user.id)) return res(true);
-
-  const { userTier, ownerTier } = await fct.getPatreonTiers(interaction);
+  // ActivityRank staff are exempt from stat command cooldowns
+  if (getStaffEntitlement(interaction.user.id).isStaff) return ALLOW;
 
   let cd = Time.Minute * 2;
-  if (userTier === 1) cd = Time.Second * 20;
-  if (userTier >= 2 || ownerTier >= 2) cd = Time.Second * 3;
+  let skipAds = false;
+  if (hasValidEntitlement(interaction)) {
+    // guild has a Discord subscription
+    cd = Time.Second * 5;
+    skipAds = true;
+  } else {
+    const { userTier, ownerTier } = await fct.getPatreonTiers(interaction);
+    if (userTier === 1) {
+      // user has a Patreon subscription
+      cd = Time.Second * 20;
+      skipAds = true;
+    }
+    if (userTier >= 2 || ownerTier >= 2) {
+      // user or server owner has a Patreon Tier 2 subscription
+      cd = Time.Second * 5;
+      skipAds = true;
+    }
+  }
 
   const cachedMember = await getMemberModel(interaction.member);
 
@@ -62,45 +75,76 @@ export async function handleStatCommandsCooldown(
   // no need to wait any longer: set now as last command usage and allow
   if (toWait.remaining <= 0) {
     cachedMember.cache.lastStatCommandDate = new Date();
-    return res(true);
+    return ALLOW;
   }
 
-  const reply: PartiallyRequired<BaseMessageOptions, 'content'> = {
-    content: activeStatCommandCooldown(cd, toWait.next),
+  const reply: { flags: number; components: APIMessageTopLevelComponent[] } = {
+    components: [
+      textDisplay(
+        t('cooldown.statcommands', {
+          prefix: emoji('no'),
+          duration: fmtDuration(interaction.locale, cd),
+          countdown: time(toWait.next, 'R'),
+        }),
+      ),
+    ],
+    flags: MessageFlags.IsComponentsV2,
   };
 
-  if (userTier < 2) {
-    reply.content += premiumLowersCooldownMessage;
-    reply.components = PATREON_COMPONENTS;
+  if (!skipAds) {
+    reply.components.push(
+      section(
+        textDisplay(
+          `To speed up stat commands and support the bot, please consider **[becoming a Patron](<${PATREON_URL}>)**.`,
+        ),
+        PATREON_BUTTON,
+      ),
+      section(
+        textDisplay(
+          `To make these commands faster for everyone in your server, consider **activating ${emoji('store')} Premium** for your server!`,
+        ),
+        PREMIUM_BUTTON,
+      ),
+    );
   }
 
   if (interaction.deferred) {
     await interaction.editReply(reply);
   } else {
-    await interaction.reply({ ...reply, ephemeral: true });
+    await interaction.reply({ ...reply, flags: MessageFlags.Ephemeral | reply.flags });
   }
-  return res(false);
+  return DENY;
 }
 
 export async function handleResetCommandsCooldown(
+  t: TFunction<'command-content'>,
   interaction: ChatInputCommandInteraction<'cached'>,
 ): Promise<{ denied: boolean; allowed: boolean }> {
-  const res = (allowed: boolean) => ({ allowed, denied: !allowed });
-
   if (RESET_GUILD_IDS.has(interaction.guildId)) {
     await interaction.reply({
       content: 'A reset job is currently running. Try again later.',
       ephemeral: true,
     });
-    return res(false);
+    return DENY;
   }
 
-  const { userTier, ownerTier } = await fct.getPatreonTiers(interaction);
-
   let cd = Time.Hour / 2;
-  if (userTier === 1) cd = Time.Minute * 10;
-  if (ownerTier === 3) cd = Time.Minute * 5;
-  if (userTier === 2 || userTier === 3) cd = Time.Minute * 2;
+  let skipAds = false;
+
+  if (hasValidEntitlement(interaction)) {
+    // guild has a Discord subscription
+    cd = Time.Minute * 10;
+    skipAds = true;
+  } else {
+    const { userTier, ownerTier } = await fct.getPatreonTiers(interaction);
+    if (ownerTier >= 2) {
+      cd = Time.Minute * 10;
+      skipAds = true;
+    }
+    if (userTier >= 1) {
+      skipAds = true;
+    }
+  }
 
   const cachedGuild = await getGuildModel(interaction.guild);
 
@@ -109,18 +153,43 @@ export async function handleResetCommandsCooldown(
   // no need to wait any longer: set now as last reset and allow
   if (toWait.remaining <= 0) {
     cachedGuild.cache.lastResetServer = new Date();
-    return res(true);
+    return ALLOW;
   }
 
-  const reply: BaseMessageOptions = {
-    content: activeResetServerCommandCooldown(cd, toWait.next),
+  const reply: { flags: number; components: APIMessageTopLevelComponent[] } = {
+    components: [
+      textDisplay(
+        t('cooldown.resetcommands', {
+          prefix: emoji('no'),
+          duration: fmtDuration(interaction.locale, cd),
+          countdown: time(toWait.next, 'R'),
+        }),
+      ),
+    ],
+    flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral,
   };
 
-  if (userTier < 2) {
-    reply.content += premiumLowersCooldownMessage;
-    reply.components = PATREON_COMPONENTS;
+  if (!skipAds) {
+    reply.components.push(
+      section(
+        textDisplay(
+          `To speed up resets, consider **activating ${emoji('store')} Premium** for your server!`,
+        ),
+        PREMIUM_BUTTON,
+      ),
+    );
   }
 
-  await interaction.reply({ ...reply, ephemeral: true });
-  return res(false);
+  await interaction.reply(reply);
+  return DENY;
+}
+
+function fmtDuration(locale: string, milliseconds: number): string {
+  let dura = Temporal.Duration.from({ milliseconds });
+  // balances `dura` up until "x days"
+  // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Temporal/Duration#duration_balancing
+  const smallestUnit = milliseconds > 60_000 * 3 ? 'minutes' : 'seconds';
+  dura = dura.round({ smallestUnit, largestUnit: 'days' });
+
+  return new DurationFormat([locale, 'en-US'], { style: 'long' }).format(dura);
 }

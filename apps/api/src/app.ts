@@ -1,9 +1,13 @@
-import { OpenAPIHono } from '@hono/zod-openapi';
-import { logger } from 'hono/logger';
 import { serve } from '@hono/node-server';
+import { OpenAPIHono } from '@hono/zod-openapi';
 import { apiReference } from '@scalar/hono-api-reference';
-
-import { apiRouter } from '#api.js';
+import { Cron } from 'croner';
+import { logger } from 'hono/logger';
+import { apiRouter } from '#api.ts';
+import { config, isProduction } from '#const/config.ts';
+import { runResetByTime } from '#services/reset.ts';
+import { runPatreonTask } from '#services/tasks/patreon.ts';
+import { runTopggTask } from '#services/tasks/topgg.ts';
 
 const app = new OpenAPIHono();
 app.use(logger());
@@ -20,11 +24,13 @@ app.get('/api/healthcheck', (c) => {
   return c.body(null);
 });
 
+const version = (await import('../package.json', { with: { type: 'json' } })).default.version;
+
 app.doc('/api/openapi.json', {
-  openapi: '3.0.0',
+  openapi: '3.1.0',
   info: {
     title: 'ActivityRank API',
-    version: '0.1.0',
+    version,
     description:
       'A public API for the ActivityRank Bot: https://activityrank.me \n\n\
 **WARNING** All API endpoints are in `v0`. Until `v1` is released, \
@@ -41,7 +47,9 @@ endpoints may have breaking changes made without warning.',
 app.get(
   '/api/docs',
   apiReference({
-    theme: 'purple',
+    theme: 'kepler',
+    hideClientButton: true,
+    hideTestRequestButton: true,
     spec: {
       url: '/api/openapi.json',
     },
@@ -53,3 +61,31 @@ app.route('/api/v0/', apiRouter);
 const port = process.env.PORT ? Number.parseInt(process.env.PORT) : 3000;
 serve({ fetch: app.fetch, port });
 console.info(`API Server listening on port ${port}`);
+console.info(`[http://localhost:${port}/api/docs]`);
+
+new Cron('0 0 * * *', () => runResetByTime('day'));
+new Cron('30 0 * * SUN', () => runResetByTime('week'));
+new Cron('0 1 1 * *', () => runResetByTime('month'));
+new Cron('30 1 1 1 *', () => runResetByTime('year'));
+
+let runPatreon: boolean;
+if (config.disablePatreon === null || config.disablePatreon === undefined) {
+  runPatreon = isProduction;
+} else {
+  runPatreon = !config.disablePatreon;
+}
+
+if (runPatreon) {
+  if (config.patreon) {
+    new Cron('*/15 * * * *', async function run() {
+      try {
+        await runPatreonTask();
+      } catch (e) {
+        console.warn('Failed to run Patreon task. Error:', e);
+      }
+    });
+  }
+  new Cron('*/20 * * * *', runTopggTask);
+} else {
+  console.warn('[!] Ignoring top.gg and Patreon requests due to environment');
+}

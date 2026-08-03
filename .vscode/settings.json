@@ -5,14 +5,18 @@
       "url": "./config/keys.schema.json"
     },
     {
-      "fileMatch": ["config/privileges.json", "config/privileges.example.json"],
-      "url": "./config/privileges.schema.json"
-    },
-    {
       "fileMatch": ["config/config.json", "config/config.example.json"],
       "url": "./config/config.schema.json"
     }
   ],
+  "workbench.editor.customLabels.patterns": {
+    "**/src/**/+page.*": "Page – ${dirname} (.${extname})",
+    "**/src/**/+layout.*": "Layout – ${dirname} (.${extname})"
+  },
+  "files.associations": {
+    "*.css": "tailwindcss",
+    "Caddyfile": "properties"
+  },
   "[javascript]": {
     "editor.defaultFormatter": "biomejs.biome",
     "editor.formatOnSave": true
@@ -38,6 +42,18 @@
     "editor.formatOnSave": true
   },
   "[jsonl]": {
+    "editor.defaultFormatter": "biomejs.biome",
+    "editor.formatOnSave": true
+  },
+  "[svelte]": {
+    "editor.defaultFormatter": "biomejs.biome",
+    "editor.formatOnSave": true
+  },
+  "[css]": {
+    "editor.defaultFormatter": "biomejs.biome",
+    "editor.formatOnSave": true
+  },
+  "[tailwindcss]": {
     "editor.defaultFormatter": "biomejs.biome",
     "editor.formatOnSave": true
   }

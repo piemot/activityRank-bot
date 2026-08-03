@@ -1,8 +1,8 @@
-import { command } from '#bot/commands.js';
 import { subtle } from 'node:crypto';
 import { customAlphabet } from 'nanoid';
-import { shards } from '#models/shardDb/shardDb.js';
-import { getGuildModel } from '#bot/models/guild/guildModel.js';
+import { command } from '#bot/commands.ts';
+import { getGuildModel } from '#bot/models/guild/guildModel.ts';
+import { shards } from '#models/shardDb/shardDb.ts';
 
 export default command({
   name: 'api create-token',
@@ -11,7 +11,7 @@ export default command({
     await interaction.deferReply();
 
     if (!interaction.client.shard) {
-      throw new Error();
+      throw new Error('This function is built assuming the bot is sharded.');
     }
     const fetchResults = await interaction.client.shard.broadcastEval(
       (client, ctx) => {

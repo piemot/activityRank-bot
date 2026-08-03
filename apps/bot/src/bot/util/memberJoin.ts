@@ -1,30 +1,42 @@
-import { getMemberModel } from '../models/guild/guildMemberModel.js';
-import levelManager from '../levelManager.js';
-import { getGuildModel } from '../models/guild/guildModel.js';
-import fct from '../../util/fct.js';
-import { type DiscordAPIError, RESTJSONErrorCodes, type GuildMember } from 'discord.js';
-import { EmbedBuilder } from 'discord.js';
+import {
+  type DiscordAPIError,
+  EmbedBuilder,
+  type GuildMember,
+  RESTJSONErrorCodes,
+} from 'discord.js';
+import {
+  checkLevelup,
+  getNewMemberRoles,
+  getRoleAssignmentMessages,
+  runRoleUpdate,
+} from '#bot/levelManager.ts';
+import { getMemberModel } from '../models/guild/guildMemberModel.ts';
+import { getGuildModel } from '../models/guild/guildModel.ts';
 
 export async function handleMemberJoin(member: GuildMember) {
-  // member.client.logger.debug(`Handling member ${member.id} join`);
   if (member.user.bot) return;
 
   const cachedGuild = await getGuildModel(member.guild);
   const cachedMember = await getMemberModel(member);
 
-  let roleAssignmentString: string[] = [];
+  let roleAssignmentMessages: string[] = [];
   if (cachedGuild.db.stickyLevelRoles) {
     // Roleassignments
-    const level = fct.getLevel(
-      fct.getLevelProgression(cachedMember.cache.totalXp ?? 0, cachedGuild.db.levelFactor),
-    );
-    roleAssignmentString = await levelManager.checkRoleAssignment(member, level);
-    if (level > 1) await levelManager.checkLevelUp(member, 0, cachedMember.cache.totalXp ?? 0);
+    const totalXp = cachedMember.cache.totalXp ?? 0;
+    const { newLevel } = await checkLevelup(member.guild, 0, totalXp);
+
+    const newRoles = await getNewMemberRoles(member, newLevel);
+    roleAssignmentMessages = await getRoleAssignmentMessages(member, newRoles);
+    await runRoleUpdate(member, newLevel, newRoles, true);
+  } else {
+    // only level 1 assignments
+    const newRoles = await getNewMemberRoles(member, 1);
+    await runRoleUpdate(member, 1, newRoles, true);
   }
 
   // AutoPost serverjoin
   if (cachedGuild.db.autopost_serverJoin !== '0')
-    await autoPostServerJoin(member, roleAssignmentString);
+    await autoPostServerJoin(member, roleAssignmentMessages);
 }
 
 async function autoPostServerJoin(member: GuildMember, roleAssignmentString: string[]) {
@@ -47,7 +59,7 @@ async function autoPostServerJoin(member: GuildMember, roleAssignmentString: str
 
   const welcomeEmbed = new EmbedBuilder()
     .setTitle(member.user.username)
-    .setColor('#4fd6c8')
+    .setColor(0x01c3d9)
     .setDescription(welcomeMessage)
     .setThumbnail(member.user.avatarURL());
 

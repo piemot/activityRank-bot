@@ -1,40 +1,40 @@
-import { type GuildModel, getGuildModel } from '../models/guild/guildModel.js';
+import { Time } from '@sapphire/duration';
+import {
+  type ActionRowData,
+  type APIEmbed,
+  ButtonStyle,
+  ChannelType,
+  type ChatInputCommandInteraction,
+  ComponentType,
+  type DiscordAPIError,
+  type Guild,
+  type GuildChannel,
+  type InteractionEditReplyOptions,
+  type MessageActionRowComponentData,
+  type MessageComponentInteraction,
+  RESTJSONErrorCodes,
+  time,
+} from 'discord.js';
+import { command } from '#bot/commands.ts';
 import {
   getChannelMemberRanks,
   getChannelRanks,
   getGuildMemberRanks,
-} from '#bot/models/rankModel.js';
-import fct, { type Pagination } from '../../util/fct.js';
-import { handleStatCommandsCooldown } from '../util/cooldownUtil.js';
-import { getChannelMention, getGuildMemberNamesWithRanks } from '../util/nameUtil.js';
+} from '#bot/models/rankModel.ts';
+import { actionrow } from '#bot/util/component.ts';
+import { requireUser } from '#bot/util/predicates.ts';
 import {
-  ButtonStyle,
-  ChannelType,
-  RESTJSONErrorCodes,
-  ComponentType,
-  type DiscordAPIError,
-  type MessageComponentInteraction,
-  type ChatInputCommandInteraction,
-  type Guild,
-  type InteractionEditReplyOptions,
-  type GuildChannel,
-  type ActionRowData,
-  type MessageActionRowComponentData,
-  time,
-  type APIEmbed,
-} from 'discord.js';
-import { statTimeIntervals, type StatTimeInterval, type StatType } from '#models/types/enums.js';
-import { command } from '#bot/commands.js';
-import { Time } from '@sapphire/duration';
-import { assertUnreachable } from '#bot/util/typescript.js';
-import { actionrow } from '#bot/util/component.js';
-import {
-  component,
   ComponentKey,
   type ComponentPredicateConfig,
-} from '#bot/util/registry/component.js';
-import { requireUser } from '#bot/util/predicates.js';
-import { emoji } from '#const/config.js';
+  component,
+} from '#bot/util/registry/component.ts';
+import { assertUnreachable } from '#bot/util/typescript.ts';
+import { emoji } from '#const/config.ts';
+import { type StatTimeInterval, type StatType, statTimeIntervals } from '#models/types/enums.ts';
+import fct, { type Pagination } from '../../util/fct.ts';
+import { type GuildModel, getGuildModel } from '../models/guild/guildModel.ts';
+import { handleStatCommandsCooldown } from '../util/cooldownUtil.ts';
+import { getChannelMention, getGuildMemberNamesWithRanks } from '../util/nameUtil.ts';
 
 const _prettifyTime = {
   day: 'Today',
@@ -68,12 +68,12 @@ interface CacheInstance {
 
 export default command({
   name: 'top',
-  async execute({ interaction }) {
+  async execute({ interaction, t }) {
     await interaction.deferReply();
 
     const cachedGuild = await getGuildModel(interaction.guild);
 
-    if ((await handleStatCommandsCooldown(interaction)).denied) return;
+    if ((await handleStatCommandsCooldown(t, interaction)).denied) return;
 
     const initialState: CacheInstance = {
       window: 'members',
@@ -214,7 +214,7 @@ async function generateChannels(
 
   const embed = {
     title,
-    color: 0x4fd6c8,
+    color: 0x01c3d9,
     fields: [
       { name: 'Text', value: await topTypeChannels('textMessage'), inline: true },
       { name: 'Voice', value: await topTypeChannels('voiceMinute'), inline: true },
@@ -238,7 +238,7 @@ async function getTopChannels(
 
   const channelMention = (index: number) =>
     getChannelMention(guild.channels.cache, channelRanks[index].channelId);
-  const emoji = type === 'voiceMinute' ? ':microphone2:' : ':writing_hand:';
+  const label = type === 'voiceMinute' ? emoji('voice') : emoji('message');
   const channelValue = (index: number) =>
     type === 'voiceMinute'
       ? Math.round((channelRanks[index].total / 60) * 10) / 10
@@ -246,7 +246,7 @@ async function getTopChannels(
 
   const s = [];
   for (let i = 0; i < channelRanks.length; i++)
-    s.push(`#${page.from + i} | ${channelMention(i)} ⇒ ${emoji} ${channelValue(i)}`);
+    s.push(`#${page.from + i} | ${channelMention(i)} ⇒ ${label} ${channelValue(i)}`);
 
   return s.join('\n');
 }
@@ -262,7 +262,7 @@ async function generateChannelMembers(
       embeds: [
         {
           title: `Toplist | ${_prettifyTime[state.time]}`,
-          color: 0x4fd6c8,
+          color: 0x01c3d9,
           description: 'Select a channel.',
         },
       ],
@@ -287,14 +287,14 @@ async function generateChannelMembers(
 
   if (!channelMemberRanks || channelMemberRanks.length === 0) {
     return {
-      embeds: [{ title, color: 0x4fd6c8, description: 'No entries found for this page.' }],
+      embeds: [{ title, color: 0x01c3d9, description: 'No entries found for this page.' }],
       components: getChannelMembersComponents(state, disabled),
     };
   }
 
   const ranksWithNames = await getGuildMemberNamesWithRanks(guild, channelMemberRanks);
 
-  const embed: APIEmbed = { title, color: 0x4fd6c8 };
+  const embed: APIEmbed = { title, color: 0x01c3d9 };
 
   const bonusUntil = new Date(Number.parseInt(cachedGuild.db.bonusUntilDate) * 1000);
 
@@ -307,8 +307,8 @@ async function generateChannelMembers(
 
     const value =
       type === 'voiceMinute'
-        ? `:microphone2: ${Math.round((rank.total / 60) * 10) / 10}`
-        : `:writing_hand: ${rank.total}`;
+        ? `${emoji('voice')} ${Math.round((rank.total / 60) * 10) / 10}h`
+        : `${emoji('message')} ${rank.total}`;
 
     embed.fields = [
       ...(embed.fields ?? []),
@@ -350,14 +350,14 @@ async function generateGuildMembers(
 
   if (!memberRanks || memberRanks.length === 0) {
     return {
-      embeds: [{ title, color: 0x4fd6c8, description: 'No entries found for this page.' }],
+      embeds: [{ title, color: 0x01c3d9, description: 'No entries found for this page.' }],
       components: getMembersComponents(state, disabled),
     };
   }
 
   const memberRanksWithNames = await getGuildMemberNamesWithRanks(guild, memberRanks);
 
-  const embed: APIEmbed = { title, color: 0x4fd6c8 };
+  const embed: APIEmbed = { title, color: 0x01c3d9 };
 
   const bonusUntil = new Date(Number.parseInt(cachedGuild.db.bonusUntilDate) * 1000);
 
@@ -372,10 +372,11 @@ async function generateGuildMembers(
 
     const getScoreString = (type: StatType) => {
       if (type === 'textMessage' && cachedGuild.db.textXp)
-        return `:writing_hand: ${memberRank.textMessage}`;
+        return `${emoji('message')} ${memberRank.textMessage}`;
       if (type === 'voiceMinute' && cachedGuild.db.voiceXp)
-        return `:microphone2: ${Math.round((memberRank.voiceMinute / 60) * 10) / 10}`;
-      if (type === 'invite' && cachedGuild.db.inviteXp) return `:envelope: ${memberRank.invite}`;
+        return `${emoji('voice')} ${Math.round((memberRank.voiceMinute / 60) * 10) / 10}`;
+      if (type === 'invite' && cachedGuild.db.inviteXp)
+        return `${emoji('invite')} ${memberRank.invite}`;
       if (type === 'vote' && cachedGuild.db.voteXp)
         return `${cachedGuild.db.voteEmote} ${memberRank.vote}`;
       if (type === 'bonus' && cachedGuild.db.bonusXp)

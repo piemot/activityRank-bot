@@ -1,11 +1,11 @@
 import type { ShardDB } from '@activityrank/database';
-import { shards } from '../../models/shardDb/shardDb.js';
-import fct from '../../util/fct.js';
 import type { Guild } from 'discord.js';
-import type { StatTimeInterval, StatType } from '#models/types/enums.js';
-import { getGuildModel } from './guild/guildModel.js';
-import { expressionBuilder, type ExpressionBuilder } from 'kysely';
+import { type ExpressionBuilder, expressionBuilder } from 'kysely';
 import { jsonBuildObject } from 'kysely/helpers/mysql';
+import type { StatTimeInterval, StatType } from '#models/types/enums.ts';
+import { shards } from '../../models/shardDb/shardDb.ts';
+import fct from '../../util/fct.ts';
+import { getGuildModel } from './guild/guildModel.ts';
 
 /**
  * Fetch the XP and statistic values of a range of members in a given guild, over a given timespan.
@@ -260,16 +260,18 @@ export async function fetchGuildMemberStatistics(guild: Guild, userId: string) {
 /**
  * Retrieve the rank of a single member in the guild, ranked by total XP over a given time period.
  * @returns The rank of the specified member: `1` represents the member with the most XP over the given time period.
+ *  Returns `null` if the amount of XP is zero.
  */
 export async function getGuildMemberScorePosition(
   guild: Guild,
   userId: string,
   time: StatTimeInterval,
-) {
+): Promise<number | null> {
   const cachedGuild = await getGuildModel(guild);
 
   const { db } = shards.get(cachedGuild.dbHost);
 
+  // TODO: rename everything here for clarity
   const myRank = db
     .selectFrom('guildMember')
     .select(`${time} as score`)
@@ -283,27 +285,40 @@ export async function getGuildMemberScorePosition(
     .as('guild_ranks');
 
   // SELECT COUNT of all ranks where their rank > this member's rank
-  const { count } = await db
+  const selectCount = db
     .selectFrom([myRank, guildRanks])
-    // count is returned as a string - presumably because it could be a bigint.
+    // `count` is returned as a string - presumably because it could be a bigint.
     .select((eb) => eb.fn.countAll<string>().as('count'))
     .whereRef('guild_ranks.score', '>', 'member_rank.score')
-    .executeTakeFirstOrThrow();
+    .as('score');
 
-  // make it 1-indexed
-  return Number.parseInt(count) + 1;
+  const result = await db
+    .selectFrom([myRank, selectCount])
+    .select(['score.count', 'member_rank.score as member_score'])
+    .executeTakeFirst();
+
+  // If the member has a score of 0, they don't have a place on the leaderboard.
+  // Members with a score of 0 are often new, and therefore have a score of `NULL`.
+  // Because comparing `NULL` with a number results in a NULL, `result.count` ends up being `0`.
+  // Obviously, a new member isn't rank #1.
+  if (result?.member_score && result.member_score > 0) {
+    // make it 1-indexed
+    return Number.parseInt(result.count) + 1;
+  }
+  return null;
 }
 
 /**
  * Retrieve the rank of a single member in the guild, ranked by a given statistic over a given time period.
  * @returns The rank of the specified member: `1` represents the member with the most instances of the statistic over the given time period.
+ *  Returns `null` if the statistic in the category is zero.
  */
 export async function getGuildMemberStatPosition(
   guild: Guild,
   userId: string,
   statistic: StatType,
   time: StatTimeInterval,
-) {
+): Promise<number | null> {
   const cachedGuild = await getGuildModel(guild);
 
   const { db } = shards.get(cachedGuild.dbHost);
@@ -322,15 +337,23 @@ export async function getGuildMemberStatPosition(
     .as('guild_ranks');
 
   // SELECT COUNT of all ranks where their rank > this member's rank
-  const { count } = await db
+  const selectCount = db
     .selectFrom([myRank, guildRanks])
-    // count is returned as a string - presumably because it could be a bigint.
+    // `count` is returned as a string - presumably because it could be a bigint.
     .select((eb) => eb.fn.countAll<string>().as('count'))
     .whereRef('guild_ranks.count', '>', 'member_rank.count')
-    .executeTakeFirstOrThrow();
+    .as('count');
 
-  // make it 1-indexed
-  return Number.parseInt(count) + 1;
+  const result = await db
+    .selectFrom([myRank, selectCount])
+    .select(['count.count', 'member_rank.count as member_count'])
+    .executeTakeFirst();
+
+  if (result?.member_count && Number.parseInt(result.member_count.toString()) > 0) {
+    // make it 1-indexed
+    return Number.parseInt(result.count) + 1;
+  }
+  return null;
 }
 
 /**

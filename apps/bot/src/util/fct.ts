@@ -1,31 +1,20 @@
 import type { ShardDB } from '@activityrank/database';
-import { getRoleModel } from '#bot/models/guild/guildRoleModel.js';
-import { getUserModel } from '../bot/models/userModel.js';
-import type { BaseInteraction, GuildMember } from 'discord.js';
+import type { BaseInteraction, Entitlement, GuildMember } from 'discord.js';
+import { getRoleModel } from '#bot/models/guild/guildRoleModel.ts';
+import { PREMIUM_SKU_ID } from '#bot/util/constants.ts';
+import { getUserModel } from '../bot/models/userModel.ts';
 
-// System
-export const waitAndReboot = async (milliseconds: number) => {
-  try {
-    console.log(`Restarting in ${milliseconds / 1000}s`);
-    await sleep(milliseconds);
-    console.log('Restart');
-    process.exit();
-  } catch (err) {
-    console.log(err);
-  }
-};
-
-export const sleep = (milliseconds: number) => {
+export function sleep(milliseconds: number) {
   return new Promise((resolve) => setTimeout(resolve, milliseconds));
-};
+}
 
-export const hasNoXpRole = async (member: GuildMember) => {
+export async function hasNoXpRole(member: GuildMember) {
   for (const role of member.roles.cache.values()) {
     const cachedRole = await getRoleModel(role);
     if (cachedRole.db.noXp) return true;
   }
   return false;
-};
+}
 
 /**
  * An object describing the entries that should be provided to a page.
@@ -39,19 +28,19 @@ export interface Pagination {
   to: number;
 }
 
-export const extractPageSimple = (page: number, entriesPerPage: number): Pagination => {
+export function extractPageSimple(page: number, entriesPerPage: number): Pagination {
   const from = Math.max((page - 1) * entriesPerPage + 1);
   const to = page * entriesPerPage;
   return { page, from, to };
-};
+}
 
-export const getLevel = (levelProgression: number) => {
+export function getLevel(levelProgression: number) {
   return Math.floor(levelProgression);
-};
+}
 
-export const getLevelProgression = (totalScore: number, levelFactor: number) => {
+export function getLevelProgression(totalScore: number, levelFactor: number) {
   return (solve(levelFactor / 2, levelFactor / 2 + 100, -totalScore) ?? 0) + 1;
-};
+}
 
 function solve(a: number, b: number, c: number) {
   const result = (-1 * b + Math.sqrt(b ** 2 - 4 * a * c)) / (2 * a);
@@ -60,6 +49,19 @@ function solve(a: number, b: number, c: number) {
   if (result >= 0) return result;
   if (result2 >= 0) return result2;
   return null;
+}
+
+export function hasValidEntitlement(interaction: BaseInteraction<'cached'>) {
+  function isValidEntitlement(entitlement: Entitlement) {
+    return (
+      entitlement.isGuildSubscription() &&
+      entitlement.isActive() &&
+      entitlement.guildId === interaction.guildId &&
+      entitlement.skuId === PREMIUM_SKU_ID
+    );
+  }
+
+  return interaction.entitlements.some(isValidEntitlement);
 }
 
 export async function getPatreonTiers(interaction: BaseInteraction<'cached'>) {
@@ -102,15 +104,14 @@ export function getVoteMultiplier(dbUser: ShardDB.User): number {
   return multiplier;
 }
 
-export const getPatreonTierName = (tier: number) => {
+export function getPatreonTierName(tier: number) {
   if (tier === 3) return 'Serveradmin';
   if (tier === 2) return 'Poweruser';
   if (tier === 1) return 'Supporter';
   return 'No tier';
-};
+}
 
 export default {
-  waitAndReboot,
   sleep,
   hasNoXpRole,
   extractPageSimple,

@@ -1,21 +1,21 @@
-import { event } from '#bot/util/registry/event.js';
-import { Events } from 'discord.js';
-import { getGuildModel } from '../models/guild/guildModel.js';
-import { getUserModel } from '../models/userModel.js';
-import askForPremium from '../util/askForPremium.js';
 import {
-  type Interaction,
-  type AutocompleteInteraction,
-  EmbedBuilder,
   ActionRowBuilder,
+  type AutocompleteInteraction,
   ButtonBuilder,
   ButtonStyle,
   type DiscordAPIError,
+  EmbedBuilder,
+  Events,
+  type Interaction,
   RESTJSONErrorCodes,
 } from 'discord.js';
-import { stripIndent } from 'common-tags';
-import { config } from '#const/config.js';
-import { registry } from '#bot/util/registry/registry.js';
+import { outdent } from 'outdent';
+import { event } from '#bot/util/registry/event.ts';
+import { registry } from '#bot/util/registry/registry.ts';
+import { config } from '#const/config.ts';
+import { getGuildModel } from '../models/guild/guildModel.ts';
+import { getUserModel } from '../models/userModel.ts';
+import { askForPremium } from '../util/askForPremium.ts';
 
 export default event(Events.InteractionCreate, async (interaction) => {
   try {
@@ -67,9 +67,9 @@ export default event(Events.InteractionCreate, async (interaction) => {
       if (interaction.isAutocomplete()) return;
 
       const message = {
-        content: stripIndent`
-        There was an error while executing this command! 
-        If this error persists, report it [in our support server](${config.supportServer.invite})`,
+        content: outdent`
+          There was an error while executing this command! 
+          If this error persists, report it [in our support server](${config.supportServer.invite})`,
         ephemeral: true,
       };
 
@@ -101,7 +101,7 @@ async function executeBans(
       embeds: [
         new EmbedBuilder()
           .setDescription('❌ This server been blacklisted from the bot.')
-          .setColor(0xff0000),
+          .setColor(0xe7000b),
       ],
       components: [
         new ActionRowBuilder<ButtonBuilder>().setComponents(
@@ -124,7 +124,7 @@ async function executeBans(
       embeds: [
         new EmbedBuilder()
           .setDescription('❌ You have been blacklisted from the bot.')
-          .setColor(0xff0000),
+          .setColor(0xe7000b),
       ],
       components: [
         new ActionRowBuilder<ButtonBuilder>().setComponents(

@@ -1,5 +1,5 @@
-import { managerFetch } from './managerDb.js';
-import type { TextsData } from '#models/types/external.js';
+import type { TextsData } from '#models/types/external.d.ts';
+import { managerFetch } from './managerDb.ts';
 
 let cachedTexts: TextsData | null = null;
 
@@ -9,6 +9,6 @@ export async function getTexts() {
 }
 
 export async function updateTexts() {
-  cachedTexts = await managerFetch<TextsData>('api/texts', { method: 'GET' });
+  cachedTexts = await managerFetch<TextsData>('api/v0/texts', {});
   return cachedTexts;
 }

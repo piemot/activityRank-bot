@@ -1,38 +1,27 @@
 import { readFile } from 'node:fs/promises';
-import { packageFile } from './paths.js';
-
 import { configLoader, schemas } from '@activityrank/cfg';
-import type { EmojiNames } from './emoji.generated.js';
+import type { EmojiNames } from './emoji.generated.ts';
+import { packageFile } from './paths.ts';
 
 export const isProduction = process.env.NODE_ENV === 'production';
-const loader = () =>
-  isProduction
-    ? configLoader()
-    : configLoader(process.env.CONFIG_PATH ?? `${import.meta.dirname}/../../../../config`);
+const loader = await configLoader();
 
-export const config = await loader().load({
-  name: 'config',
-  schema: schemas.bot.config,
-  secret: false,
-});
-export const keys = await loader().load({ name: 'keys', schema: schemas.bot.keys, secret: true });
-export const privileges = await loader().load({
-  name: 'privileges',
-  schema: schemas.bot.privileges,
-  secret: false,
-});
-export const emojiIds = await loader().load({
-  name: 'emoji',
-  schema: schemas.bot.emojis,
-  secret: false,
-});
+export const config = await loader.loadConfig('config', { schema: schemas.bot.config });
+export const keys = await loader.loadSecret('keys', { schema: schemas.bot.keys });
 
 export function emoji(name: EmojiNames) {
-  const id = emojiIds[name];
+  const id = config.emoji[name];
   if (!id) {
     throw new Error(`Failed to resolve bot emoji "${name}".`);
   }
   return `<:${name}:${id}>`;
+}
+export function emojiId(name: EmojiNames) {
+  const id = config.emoji[name];
+  if (!id) {
+    throw new Error(`Failed to resolve bot emoji "${name}".`);
+  }
+  return id;
 }
 
 const pkgfile = await readFile(packageFile);
@@ -40,25 +29,36 @@ const pkg = JSON.parse(pkgfile.toString());
 
 export const version = pkg.version as string;
 
-export const PrivilegeLevel = {
+export const StaffEntitlementLevel = {
   Developer: 'DEVELOPER',
   Moderator: 'MODERATOR',
   HelpStaff: 'HELPSTAFF',
 } as const;
 
-export type PrivilegeLevel = (typeof PrivilegeLevel)[keyof typeof PrivilegeLevel];
+export type StaffEntitlementLevel =
+  (typeof StaffEntitlementLevel)[keyof typeof StaffEntitlementLevel];
 
-const privilegeLevels: { [k in PrivilegeLevel]: number } = {
-  DEVELOPER: 3,
-  MODERATOR: 2,
+const staffEntitlementLevels: { [k in StaffEntitlementLevel]: number } = {
+  DEVELOPER: 10,
+  MODERATOR: 5,
   HELPSTAFF: 1,
 };
 
-export function hasPrivilege(requirement: PrivilegeLevel, testCase: PrivilegeLevel | undefined) {
-  if (!testCase) return false;
-  return privilegeLevels[testCase] >= privilegeLevels[requirement];
+export function getStaffEntitlement(userId: string) {
+  const isStaff = Object.keys(config.staffEntitlements).includes(userId);
+  if (!isStaff) {
+    return { isStaff } as const;
+  }
+  const entitlementLevel = config.staffEntitlements[userId];
+  return { isStaff, entitlementLevel };
 }
 
-export function isPrivileged(userId: string) {
-  return Object.keys(privileges).includes(userId);
+export function hasStaffEntitlement(
+  requirement: StaffEntitlementLevel,
+  testCase: StaffEntitlementLevel | undefined,
+) {
+  if (!testCase) return false;
+  return staffEntitlementLevels[testCase] >= staffEntitlementLevels[requirement];
 }
+
+export const exposedPort = Number.parseInt(process.env.PORT as string) || 3010;

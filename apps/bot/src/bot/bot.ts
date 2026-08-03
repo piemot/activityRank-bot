@@ -1,41 +1,22 @@
-import { Client, Options, GatewayIntentBits, Partials, type GuildMember } from 'discord.js';
-import fct from '../util/fct.js';
-import loggerManager from './util/logger.js';
-import globalLogger from '../util/logger.js';
-import { ActivityType } from 'discord.js';
-import { updateTexts } from '#models/managerDb/textModel.js';
-import { memberCache } from './models/guild/guildMemberModel.js';
 import { Time } from '@sapphire/duration';
-import { registry } from './util/registry/registry.js';
-import { ensureI18nLoaded } from './util/i18n.js';
-
-const intents = [
-  GatewayIntentBits.Guilds,
-  GatewayIntentBits.GuildMembers,
-  // FLAGS.GUILD_BANS,
-  // FLAGS.GUILD_EMOJIS_AND_STICKERS,
-  // GatewayIntentBits.GuildIntegrations,
-  // FLAGS.GUILD_WEBHOOKS,
-  GatewayIntentBits.GuildVoiceStates,
-  GatewayIntentBits.GuildMessages,
-  GatewayIntentBits.GuildMessageReactions,
-  // FLAGS.GUILD_MESSAGE_TYPING,
-  // FLAGS.DIRECT_MESSAGES,
-  // FLAGS.DIRECT_MESSAGE_REACTIONS,
-  // FLAGS.DIRECT_MESSAGE_TYPING,
-];
-
-const sweepers = {
-  ...Options.DefaultSweeperSettings,
-  messages: {
-    interval: 300, // 5m
-    lifetime: 600, // 10m
-  },
-  invites: {
-    interval: 300, // 5m
-    lifetime: 600, // 10m
-  },
-};
+import {
+  ActivityType,
+  Client,
+  type ClientOptions,
+  GatewayIntentBits,
+  type GuildMember,
+  Options,
+  Partials,
+} from 'discord.js';
+import invariant from 'tiny-invariant';
+import { keys } from '#const/config.ts';
+import { updateTexts } from '#models/managerDb/textModel.ts';
+import fct from '../util/fct.ts';
+import globalLogger from '../util/logger.ts';
+import { memberCache } from './models/guild/guildMemberModel.ts';
+import { ensureI18nLoaded } from './util/i18n.ts';
+import loggerManager from './util/logger.ts';
+import { registry } from './util/registry/registry.ts';
 
 /**
  * Decide whether or not a member should be kept cached.
@@ -54,8 +35,14 @@ function keepMemberCached(member: GuildMember): boolean {
   return false;
 }
 
-const client = new Client({
-  intents,
+const clientOptions: ClientOptions = {
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMembers,
+    GatewayIntentBits.GuildVoiceStates,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.GuildMessageReactions,
+  ],
   presence: {
     activities: [
       {
@@ -92,7 +79,13 @@ const client = new Client({
   },
   // Message and Reaction partials are required to listen for reactions on uncached messages (for reactionVotes).
   partials: [Partials.Message, Partials.Reaction],
-});
+};
+
+if (keys.proxy) {
+  clientOptions.rest = { api: keys.proxy };
+}
+
+const client = new Client(clientOptions);
 
 // Adjusts number of threads allocated by libuv
 // @ts-expect-error process.env only expects string values
@@ -102,7 +95,11 @@ start();
 
 async function start() {
   try {
-    client.logger = loggerManager.init(client.shard?.ids ?? []);
+    // see https://github.com/discordjs/discord.js/blob/14.25.1/packages/discord.js/src/sharding/Shard.js#L69
+    invariant(process.env.SHARDS, 'SHARDS should always be set by the Discord.JS sharding manager');
+    const shardId = parseInt(process.env.SHARDS);
+    invariant(Number.isSafeInteger(shardId), 'SHARDS should always be a single integer');
+    client.logger = loggerManager.init(shardId);
     client.logger.info('Initialising...');
 
     await ensureI18nLoaded();
@@ -121,8 +118,9 @@ async function start() {
     await client.login();
     client.logger.info('Initialized');
   } catch (e) {
-    globalLogger.warn(e, 'Error while launching shard');
-    await fct.waitAndReboot(3_000);
+    globalLogger.error(e, 'Error while launching shard');
+    await fct.sleep(500);
+    process.exit();
   }
 }
 

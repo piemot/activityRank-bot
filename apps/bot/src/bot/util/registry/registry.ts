@@ -1,5 +1,6 @@
-import { EventHandler } from './event.js';
-import { Command } from './command.js';
+import type { EventEmitter } from 'node:events';
+import TTLCache from '@isaacs/ttlcache';
+import { Time } from '@sapphire/duration';
 import type {
   AutocompleteInteraction,
   ChatInputCommandInteraction,
@@ -8,24 +9,22 @@ import type {
   ModalSubmitInteraction,
 } from 'discord.js';
 import fg from 'fast-glob';
-import type { EventEmitter } from 'node:events';
+import { Command } from './command.ts';
 import {
+  Component,
   type ComponentInstance,
   type ComponentInteraction,
-  Component,
   ComponentKey,
-} from './component.js';
-import { Predicate } from './predicate.js';
-import TTLCache from '@isaacs/ttlcache';
-import { Time } from '@sapphire/duration';
+} from './component.ts';
+import { EventHandler } from './event.ts';
 
 const glob = async (paths: string | string[]) => await fg(paths, { absolute: true });
 
-const EVENT_PATHS = [`${import.meta.dirname}/../../events/*.js`];
+const EVENT_PATHS = [`${import.meta.dirname}/../../events/*.ts`];
 const COMMAND_PATHS = [
-  `${import.meta.dirname}/../../commands/**/*.js`,
-  `${import.meta.dirname}/../../commandsAdmin/**/*.js`,
-  `${import.meta.dirname}/../../contextMenus/**/*.js`,
+  `${import.meta.dirname}/../../commands/**/*.ts`,
+  `${import.meta.dirname}/../../commandsAdmin/**/*.ts`,
+  `${import.meta.dirname}/../../contextMenus/**/*.ts`,
 ];
 
 export async function createRegistry() {
@@ -55,8 +54,11 @@ export class Registry {
       max: 10_000,
       ttl: 1000 * 60 * 30,
     });
+  private config: { eventFiles: string[]; commandFiles: string[] };
 
-  constructor(private config: { eventFiles: string[]; commandFiles: string[] }) {}
+  constructor(config: { eventFiles: string[]; commandFiles: string[] }) {
+    this.config = config;
+  }
 
   public async loadEvents() {
     for (const eventFile of this.config.eventFiles) {
@@ -211,6 +213,10 @@ export class Registry {
   ): Promise<void> {
     const split = Component.splitCustomId(interaction.customId);
     if (split.status === 'INVALID_VERSION') {
+      if (split.version === '2.0') {
+        // Components of Version 2 should be handled in the component code itself.
+        return;
+      }
       if (interaction.isRepliable()) {
         await interaction.reply({
           content:
@@ -255,7 +261,7 @@ export class Registry {
     }
 
     const predicate = component.checkPredicate(interaction);
-    if (predicate.status !== Predicate.Allow) {
+    if (predicate.status !== 'ALLOW') {
       await predicate.callback(interaction);
       return;
     }

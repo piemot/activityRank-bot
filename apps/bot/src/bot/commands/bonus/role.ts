@@ -1,20 +1,20 @@
-import statFlushCache from '../../statFlushCache.js';
-import { oneLine, stripIndent } from 'common-tags';
+import { Time } from '@sapphire/duration';
+import { DiscordSnowflake } from '@sapphire/snowflake';
 import {
+  type ChatInputCommandInteraction,
+  type Client,
   Events,
   GatewayOpcodes,
-  type ChatInputCommandInteraction,
-  type Role,
-  type Client,
-  type InteractionEditReplyOptions,
-  type GuildMember,
   type Guild,
+  type GuildMember,
+  type InteractionEditReplyOptions,
   type ReadonlyCollection,
+  type Role,
 } from 'discord.js';
-import { DiscordSnowflake } from '@sapphire/snowflake';
-import { command } from '#bot/commands.js';
-import { Time } from '@sapphire/duration';
 import type { TFunction } from 'i18next';
+import { outdent } from 'outdent';
+import { command } from '#bot/commands.ts';
+import statFlushCache from '../../statFlushCache.ts';
 
 export const currentJobs = new Set();
 
@@ -147,7 +147,7 @@ async function betaSystem(
     affected++;
     if (affected % 2000 === 0) {
       await interaction.editReply({
-        content: stripIndent`
+        content: outdent`
           ${t('bonus.processing', { count: members.size })}
           \`\`\`yml
           ${progressBar(affected, members.size)}
@@ -197,7 +197,7 @@ async function getApplicableMembers(
 
       if (i % 20 === 0) {
         reply({
-          content: stripIndent`
+          content: outdent`
             ${t('bonus.processing', { count: members.size })}
             \`\`\`yml
             ${progressBar(i, chunk.count)}

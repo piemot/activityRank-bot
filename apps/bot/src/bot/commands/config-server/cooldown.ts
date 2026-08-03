@@ -1,8 +1,8 @@
-import { Temporal } from 'temporal-polyfill';
 import { DurationFormat } from '@formatjs/intl-durationformat';
 import { PermissionFlagsBits } from 'discord.js';
-import { getGuildModel } from '../../models/guild/guildModel.js';
-import { command } from '#bot/commands.js';
+import { Temporal } from 'temporal-polyfill';
+import { command } from '#bot/commands.ts';
+import { getGuildModel } from '../../models/guild/guildModel.ts';
 
 export default command({
   name: 'config-server cooldown',
@@ -31,7 +31,7 @@ export default command({
       let dura = Temporal.Duration.from({ seconds });
       // balances `dura` up until "x days"
       // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Temporal/Duration#duration_balancing
-      dura = dura.round('days');
+      dura = dura.round({ largestUnit: 'days' });
 
       return new DurationFormat([interaction.locale, 'en-US'], { style: 'long' }).format(dura);
     }
@@ -43,7 +43,7 @@ export default command({
       embeds: [
         {
           author: { name: t('config-server.cooldownValues') },
-          color: 0x00ae86,
+          color: 0x01c3d9,
           description: t('config-server.modifiedCD', { messageTime, voteTime }),
         },
       ],

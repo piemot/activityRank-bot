@@ -1,10 +1,15 @@
 import type { Client, Guild, GuildBasedChannel, GuildMember, VoiceBasedChannel } from 'discord.js';
-import levelManager from './levelManager.js';
-import type { StatType } from '#models/types/enums.js';
-import { getGuildModel, type GuildModel } from './models/guild/guildModel.js';
-import { getMemberModel } from './models/guild/guildMemberModel.js';
-import { addXp } from './xpFlushCache.js';
-import { shards } from '#models/shardDb/shardDb.js';
+import { shards } from '#models/shardDb/shardDb.ts';
+import type { StatType } from '#models/types/enums.ts';
+import {
+  checkLevelup,
+  getNewMemberRoles,
+  runRoleUpdate,
+  sendLevelupMessage,
+} from './levelManager.ts';
+import { getMemberModel } from './models/guild/guildMemberModel.ts';
+import { type GuildModel, getGuildModel } from './models/guild/guildModel.ts';
+import { addXp } from './xpFlushCache.ts';
 
 async function getXpMultiplier(
   member: GuildMember,
@@ -191,7 +196,12 @@ const addTotalXp = async (member: GuildMember, xp: number) => {
   // add XP to the guildMember table
   await addXp(member, xp);
 
-  await levelManager.checkLevelUp(member, oldTotalXp, newTotalXp);
+  const { isLevelup, newLevel } = await checkLevelup(member.guild, oldTotalXp, newTotalXp);
+  if (isLevelup) {
+    const newRoles = await getNewMemberRoles(member, newLevel);
+    await sendLevelupMessage(member, newLevel, newRoles);
+    await runRoleUpdate(member, newLevel, newRoles);
+  }
 };
 
 // beta function

@@ -101,6 +101,19 @@
           },
           {
             "type": 1,
+            "name": "role",
+            "options": [
+              {
+                "type": 3,
+                "name": "id",
+                "required": true,
+                "min_length": 17,
+                "max_length": 20
+              }
+            ]
+          },
+          {
+            "type": 1,
             "name": "channels"
           },
           {
@@ -248,13 +261,13 @@
             "type": 4,
             "name": "assign-level",
             "min_value": 0,
-            "max_value": 500
+            "max_value": 1000
           },
           {
             "type": 4,
             "name": "deassign-level",
             "min_value": 0,
-            "max_value": 500
+            "max_value": 1000
           }
         ]
       },
@@ -465,7 +478,7 @@
       {
         "type": 7,
         "name": "channel",
-        "channel_types": [0, 2, 5, 15]
+        "channel_types": [0, 2, 4, 5, 15]
       },
       {
         "type": 3,
@@ -488,6 +501,40 @@
       {
         "type": 6,
         "name": "member"
+      }
+    ]
+  },
+  {
+    "default_member_permissions": "8",
+    "type": 1,
+    "name": "update-roles"
+  },
+  {
+    "default_member_permissions": "8",
+    "type": 1,
+    "name": "customize-bot"
+  },
+  {
+    "default_member_permissions": "8",
+    "type": 1,
+    "contexts": [0],
+    "name": "leaderboard",
+    "options": [
+      {
+        "type": 1,
+        "name": "activate",
+        "options": [
+          {
+            "type": 7,
+            "name": "channel",
+            "required": true,
+            "channel_types": [0, 2, 5]
+          }
+        ]
+      },
+      {
+        "type": 1,
+        "name": "destroy"
       }
     ]
   },
@@ -537,6 +584,12 @@
       {
         "type": 5,
         "name": "async"
+      },
+      {
+        "type": 3,
+        "name": "server-id",
+        "min_length": 17,
+        "max_length": 20
       },
       {
         "type": 4,

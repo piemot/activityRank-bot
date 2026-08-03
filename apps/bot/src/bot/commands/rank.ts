@@ -1,35 +1,38 @@
 import type { ShardDB } from '@activityrank/database';
 import {
-  EmbedBuilder,
-  ButtonStyle,
-  RESTJSONErrorCodes,
-  ComponentType,
-  type Guild,
-  type User,
-  type ChatInputCommandInteraction,
-  type DiscordAPIError,
-  type MessageComponentInteraction,
-  type InteractionEditReplyOptions,
   type ActionRowData,
+  type APIContainerComponent,
+  ButtonStyle,
+  type ChatInputCommandInteraction,
+  ComponentType,
+  type DiscordAPIError,
+  type Guild,
+  type InteractionEditReplyOptions,
   type MessageActionRowComponentData,
+  type MessageComponentInteraction,
+  MessageFlags,
+  RESTJSONErrorCodes,
+  time,
+  type User,
 } from 'discord.js';
-import { handleStatCommandsCooldown } from '../util/cooldownUtil.js';
-import { getGuildModel, type GuildModel } from '../models/guild/guildModel.js';
+import type { TFunction } from 'i18next';
+import { command } from '#bot/commands.ts';
 import {
   fetchGuildMemberScores,
   fetchGuildMemberStatistics,
   getGuildMemberScorePosition,
   getGuildMemberStatPosition,
   getGuildMemberTopChannels,
-} from '#bot/models/rankModel.js';
-import fct from '../../util/fct.js';
-import nameUtil from '../util/nameUtil.js';
-import { statTimeIntervals, type StatTimeInterval, type StatType } from '#models/types/enums.js';
-import { command } from '#bot/commands.js';
-import { component, ComponentKey } from '#bot/util/registry/component.js';
-import { requireUserId } from '#bot/util/predicates.js';
-import type { TFunction } from 'i18next';
-import { emoji } from '#const/config.js';
+} from '#bot/models/rankModel.ts';
+import { requireUserId } from '#bot/util/predicates.ts';
+import { ComponentKey, component } from '#bot/util/registry/component.ts';
+import { assertUnreachable } from '#bot/util/typescript.ts';
+import { emoji } from '#const/config.ts';
+import { type StatTimeInterval, type StatType, statTimeIntervals } from '#models/types/enums.ts';
+import fct from '../../util/fct.ts';
+import { type GuildModel, getGuildModel } from '../models/guild/guildModel.ts';
+import { handleStatCommandsCooldown } from '../util/cooldownUtil.ts';
+import nameUtil from '../util/nameUtil.ts';
 
 interface CacheInstance {
   window: 'rank' | 'topChannels';
@@ -39,6 +42,7 @@ interface CacheInstance {
   page: number;
   interaction: ChatInputCommandInteraction<'cached'>;
   t: TFunction<'command-content'>;
+  locales: string[];
 }
 
 const activeCache = new Map();
@@ -48,7 +52,7 @@ export default command({
   async execute({ interaction, client, options, t }) {
     await interaction.deferReply();
 
-    if ((await handleStatCommandsCooldown(interaction)).denied) return;
+    if ((await handleStatCommandsCooldown(t, interaction)).denied) return;
 
     const cachedGuild = await getGuildModel(interaction.guild);
     const myGuild = await cachedGuild.fetch();
@@ -61,6 +65,7 @@ export default command({
       owner: interaction.member.id,
       targetUser,
       page: 1,
+      locales: [interaction.locale, 'en-US'],
       interaction,
       t,
     };
@@ -148,131 +153,7 @@ async function generateCard(
   if (cache.window === 'topChannels') {
     return await generateChannelCard(cache, guild, myGuild, disabled);
   }
-  throw new Error();
-}
-
-const fmtTime = (t: TFunction<'command-content'>, k: StatTimeInterval): string => t(`rank.${k}`);
-
-async function generateChannelCard(
-  state: CacheInstance,
-  guild: Guild,
-  myGuild: ShardDB.Guild,
-  disabled: boolean,
-): Promise<InteractionEditReplyOptions> {
-  const page = fct.extractPageSimple(state.page ?? 1, myGuild.entriesPerPage);
-
-  const guildMemberInfo = await nameUtil.getGuildMemberInfo(guild, state.targetUser.id);
-
-  const header = state.t('rank.channelTop', {
-    name: guildMemberInfo.name,
-    time: fmtTime(state.t, state.time),
-  });
-
-  const embed = new EmbedBuilder()
-    .setTitle(header)
-    .setColor('#4fd6c8')
-    .addFields(
-      {
-        name: state.t('rank.text'),
-        value: (
-          await getTopChannels(state.t, page, guild, state.targetUser.id, state.time, 'textMessage')
-        ).slice(0, 1024),
-        inline: true,
-      },
-      {
-        name: state.t('rank.voice'),
-        value: (
-          await getTopChannels(state.t, page, guild, state.targetUser.id, state.time, 'voiceMinute')
-        ).slice(0, 1024),
-        inline: true,
-      },
-    );
-
-  return {
-    embeds: [embed],
-    components: getChannelComponents(state, disabled),
-  };
-}
-
-function getChannelComponents(
-  state: CacheInstance,
-  disabled: boolean,
-): ActionRowData<MessageActionRowComponentData>[] {
-  return [...getGlobalComponents(state, disabled), getPaginationComponents(state, disabled)];
-}
-
-function getPaginationComponents(
-  state: CacheInstance,
-  disabled: boolean,
-): ActionRowData<MessageActionRowComponentData> {
-  return {
-    type: ComponentType.ActionRow,
-    components: [
-      {
-        type: ComponentType.Button,
-        emoji: { name: '⬅' },
-        customId: pageButton.instanceId({
-          data: { page: state.page - 1 },
-          predicate: requireUserId(state.owner),
-        }),
-        style: ButtonStyle.Secondary,
-        disabled: state.page <= 1 || disabled,
-      },
-      {
-        type: ComponentType.Button,
-        label: state.page.toString(),
-        customId: ComponentKey.Throw,
-        style: ButtonStyle.Primary,
-        disabled: true,
-      },
-      {
-        type: ComponentType.Button,
-        emoji: { name: '➡️' },
-        customId: pageButton.instanceId({
-          data: { page: state.page + 1 },
-          predicate: requireUserId(state.owner),
-        }),
-        style: ButtonStyle.Secondary,
-        disabled,
-      },
-    ],
-  };
-}
-
-async function getTopChannels(
-  t: TFunction<'command-content'>,
-  page: { from: number; to: number },
-  guild: Guild,
-  memberId: string,
-  time: StatTimeInterval,
-  type: StatType,
-) {
-  const guildMemberTopChannels = await getGuildMemberTopChannels(
-    guild,
-    memberId,
-    type,
-    time,
-    page.from,
-    page.to,
-  );
-
-  if (!guildMemberTopChannels || guildMemberTopChannels.length === 0) {
-    return t('rank.noEntries');
-  }
-
-  const channelMention = (index: number) =>
-    nameUtil.getChannelMention(guild.channels.cache, guildMemberTopChannels[index].channelId);
-  const emoji = type === 'voiceMinute' ? ':microphone2:' : ':writing_hand:';
-  const channelValue = (index: number) =>
-    type === 'voiceMinute'
-      ? Math.round((guildMemberTopChannels[index].entries / 60) * 10) / 10
-      : guildMemberTopChannels[index].entries;
-
-  const s = [];
-  for (let i = 0; i < guildMemberTopChannels.length; i++)
-    s.push(`#${page.from + i} | ${channelMention(i)} ⇒ ${emoji} ${channelValue(i)}`);
-
-  return s.join('\n');
+  assertUnreachable(cache.window);
 }
 
 async function generateRankCard(
@@ -283,8 +164,6 @@ async function generateRankCard(
 ): Promise<InteractionEditReplyOptions> {
   const scores = await fetchGuildMemberScores(guild, state.targetUser.id);
   const statistics = await fetchGuildMemberStatistics(guild, state.targetUser.id);
-
-  if (!scores) throw new Error();
 
   const guildCache = await getGuildModel(guild);
 
@@ -298,48 +177,260 @@ async function generateRankCard(
   const guildMemberInfo = await nameUtil.getGuildMemberInfo(guild, state.targetUser.id);
   const levelProgression = fct.getLevelProgression(scores.alltime, guildCache.db.levelFactor);
 
-  const embed = new EmbedBuilder()
-    .setAuthor({
-      name: state.t('rank.statsOnServer', { time: fmtTime(state.t, state.time), name: guild.name }),
-    })
-    .setColor('#4fd6c8')
-    .setThumbnail(state.targetUser.avatarURL());
+  const container: APIContainerComponent = {
+    type: ComponentType.Container,
+    accent_color: 0x01c3d9,
+    components: [
+      {
+        type: ComponentType.TextDisplay,
+        content: `# ${state.t(`rank.statHeaders.${state.time}`, { serverName: guild.name })}`,
+      },
+    ],
+  };
 
   const bonusUntil = new Date(Number.parseInt(myGuild.bonusUntilDate) * 1000);
 
   if (bonusUntil.getTime() > Date.now()) {
-    embed.setDescription(
-      `**!! ${state.t('rank.bonusEnds', { date: `<t:${bonusUntil}:R>` })} !!**\n`,
-    );
+    // TODO: add warning or "bonustime" (clock?) emoji here
+    // embed.setDescription(
+    //   `**!! ${state.t('rank.bonusEnds', { date: `<t:${bonusUntil}:R>` })} !!**\n`,
+    // );
+    container.components.push({
+      type: ComponentType.TextDisplay,
+      content: `**${state.t('rank.bonusEnds', { date: time(bonusUntil, 'R') })}**`,
+    });
+    container.components.push({ type: ComponentType.Separator });
   }
 
   const infoStrings = [
-    state.t('rank.totalXP', { xp: Math.round(scores[state.time]), rank: positions.xp }),
-    state.t('rank.nextLevel', { percent: Math.floor((levelProgression % 1) * 100) }),
-  ].join('\n');
+    positions.xp !== null
+      ? state.t('rank.totalXP', {
+          xp: Math.round(scores[state.time]).toLocaleString(state.locales),
+          rank: positions.xp,
+        })
+      : state.t('rank.zeroXp'),
+    // only show percentage to next level for alltime; showing it for time-based xp is misleading
+    state.time === 'alltime'
+      ? state.t('rank.nextLevel', { percent: Math.floor((levelProgression % 1) * 100) })
+      : null,
+  ]
+    .filter((d) => d !== null)
+    .join('\n');
 
-  embed.addFields(
+  const userHeader =
+    // only show level progression and position if the user has at least 1 xp
+    positions.xp !== null
+      ? `\\#${positions.xp} ${guildMemberInfo.name} ${emoji('level')}${Math.floor(levelProgression)}`
+      : `${guildMemberInfo.name} ${emoji('level')}1`;
+
+  container.components.push(
     {
-      name: `#${positions.xp} **${guildMemberInfo.name}** ${emoji('level')}${Math.floor(levelProgression)}`,
-      value: infoStrings,
+      type: ComponentType.Section,
+      components: [
+        { type: ComponentType.TextDisplay, content: `## ${userHeader}\n${infoStrings}` },
+      ],
+      accessory: {
+        type: ComponentType.Thumbnail,
+        media: { url: state.targetUser.displayAvatarURL() },
+        description: state.t('rank.avatarAltText', { member: state.targetUser.username }),
+      },
     },
     {
-      name: state.t('rank.stats'),
-      value: getStatisticStrings(guildCache, statistics, positions, state.time),
+      type: ComponentType.TextDisplay,
+      content: `## ${state.t('rank.stats')}\n${getStatisticStrings(guildCache, statistics, positions, state.time)}`,
     },
   );
 
+  container.components.push({
+    type: ComponentType.ActionRow,
+    components: [
+      {
+        type: ComponentType.StringSelect,
+        custom_id: timeSelect.instanceId({ predicate: requireUserId(state.owner) }),
+        disabled,
+        options: statTimeIntervals.map((interval) => ({
+          label: state.t(`rank.${interval}`),
+          value: interval,
+          // TODO: add custom emojis (maybe partially filled clock? calendar?)
+          default: state.time === interval,
+        })),
+      },
+    ],
+  });
+
   return {
-    embeds: [embed],
-    components: getRankComponents(state, disabled),
+    components: [container, ...getGlobalComponents(state, disabled)],
+    flags: [MessageFlags.IsComponentsV2],
   };
+}
+
+async function generateChannelCard(
+  state: CacheInstance,
+  guild: Guild,
+  myGuild: ShardDB.Guild,
+  disabled: boolean,
+): Promise<InteractionEditReplyOptions> {
+  const page = fct.extractPageSimple(state.page, myGuild.entriesPerPage);
+
+  const guildMemberInfo = await nameUtil.getGuildMemberInfo(guild, state.targetUser.id);
+
+  const container: APIContainerComponent = {
+    type: ComponentType.Container,
+    accent_color: 0x01c3d9,
+    components: [
+      {
+        type: ComponentType.TextDisplay,
+        content: `# ${state.t(`rank.topChannelHeaders.${state.time}`, {
+          name: guildMemberInfo.name,
+        })}`,
+      },
+    ],
+  };
+
+  const topText = await getTopChannelStrings(
+    state.t,
+    page,
+    guild,
+    state.targetUser.id,
+    state.time,
+    'textMessage',
+  );
+  const topVoice = await getTopChannelStrings(
+    state.t,
+    page,
+    guild,
+    state.targetUser.id,
+    state.time,
+    'voiceMinute',
+  );
+
+  const contents = [
+    [topText, 'text'],
+    [topVoice, 'voice'],
+  ] as const;
+
+  const activeContent = contents
+    .filter(([val, _]) => val !== null)
+    .map(([val, type]) => `## ${state.t(`rank.${type}`)}\n${val}`)
+    .join('\n');
+
+  const inactiveContent = contents
+    .filter(([val, _]) => val === null)
+    .map(([_, type]) => `-# ${state.t(`rank.${type}Empty`)}`)
+    .join('\n');
+
+  if (activeContent.length > 0 && inactiveContent.length > 0) {
+    container.components.push(
+      { type: ComponentType.TextDisplay, content: activeContent },
+      { type: ComponentType.Separator, divider: false },
+      { type: ComponentType.TextDisplay, content: inactiveContent },
+    );
+  } else {
+    container.components.push({
+      type: ComponentType.TextDisplay,
+      content: activeContent.length > 0 ? activeContent : inactiveContent,
+    });
+  }
+
+  container.components.push(
+    { type: ComponentType.Separator, spacing: 2 },
+    {
+      type: ComponentType.ActionRow,
+      components: [
+        {
+          type: ComponentType.StringSelect,
+          custom_id: timeSelect.instanceId({ predicate: requireUserId(state.owner) }),
+          disabled,
+          options: statTimeIntervals.map((interval) => ({
+            label: state.t(`rank.${interval}`),
+            value: interval,
+            // TODO: add custom emojis (maybe partially filled clock? calendar?)
+            default: state.time === interval,
+          })),
+        },
+      ],
+    },
+    {
+      type: ComponentType.ActionRow,
+      components: [
+        {
+          type: ComponentType.Button,
+          emoji: { name: '⬅' },
+          custom_id: pageButton.instanceId({
+            data: { page: state.page - 1 },
+            predicate: requireUserId(state.owner),
+          }),
+          style: ButtonStyle.Secondary,
+          disabled: state.page <= 1 || disabled,
+        },
+        {
+          type: ComponentType.Button,
+          label: state.page.toString(),
+          custom_id: ComponentKey.Throw,
+          style: ButtonStyle.Primary,
+          disabled: true,
+        },
+        {
+          type: ComponentType.Button,
+          emoji: { name: '➡️' },
+          custom_id: pageButton.instanceId({
+            data: { page: state.page + 1 },
+            predicate: requireUserId(state.owner),
+          }),
+          style: ButtonStyle.Secondary,
+          disabled,
+        },
+      ],
+    },
+  );
+
+  return { components: [container, ...getGlobalComponents(state, disabled)] };
+}
+
+async function getTopChannelStrings(
+  _t: TFunction<'command-content'>,
+  page: { from: number; to: number },
+  guild: Guild,
+  memberId: string,
+  time: StatTimeInterval,
+  type: StatType,
+): Promise<string | null> {
+  const guildMemberTopChannels = await getGuildMemberTopChannels(
+    guild,
+    memberId,
+    type,
+    time,
+    page.from,
+    page.to,
+  );
+
+  if (!guildMemberTopChannels || guildMemberTopChannels.length === 0) {
+    return null;
+  }
+
+  const channelMention = (index: number) =>
+    nameUtil.getChannelMention(guild.channels.cache, guildMemberTopChannels[index].channelId);
+  const label = type === 'voiceMinute' ? emoji('voice') : emoji('message');
+  const channelValue = (index: number) =>
+    type === 'voiceMinute'
+      ? Math.round((guildMemberTopChannels[index].entries / 60) * 10) / 10
+      : guildMemberTopChannels[index].entries;
+
+  const s = [];
+  for (let i = 0; i < guildMemberTopChannels.length; i++)
+    s.push(`**#${page.from + i}** ${channelMention(i)}: ${label} ${channelValue(i)}`);
+
+  return s.join('\n');
 }
 
 function getGlobalComponents(
   state: CacheInstance,
   disabled: boolean,
 ): ActionRowData<MessageActionRowComponentData>[] {
-  const component = (id: 'rank' | 'topChannels', label: string): MessageActionRowComponentData => ({
+  const pageComponent = (
+    id: 'rank' | 'topChannels',
+    label: string,
+  ): MessageActionRowComponentData => ({
     type: ComponentType.Button,
     style: state.window === id ? ButtonStyle.Primary : ButtonStyle.Secondary,
     disabled: disabled || state.window === id,
@@ -351,33 +442,11 @@ function getGlobalComponents(
     {
       type: ComponentType.ActionRow,
       components: [
-        component('rank', state.t('rank.stats')),
-        component('topChannels', state.t('rank.topChannels')),
-      ],
-    },
-    {
-      type: ComponentType.ActionRow,
-      components: [
-        {
-          type: ComponentType.StringSelect,
-          customId: timeSelect.instanceId({ predicate: requireUserId(state.owner) }),
-          disabled,
-          options: statTimeIntervals.map((interval) => ({
-            label: interval,
-            value: interval,
-            default: state.time === interval,
-          })),
-        },
+        pageComponent('rank', state.t('rank.stats')),
+        pageComponent('topChannels', state.t('rank.topChannels')),
       ],
     },
   ];
-}
-
-function getRankComponents(
-  state: CacheInstance,
-  disabled: boolean,
-): ActionRowData<MessageActionRowComponentData>[] {
-  return [...getGlobalComponents(state, disabled)];
 }
 
 function getStatisticStrings(
@@ -387,18 +456,42 @@ function getStatisticStrings(
   time: StatTimeInterval,
 ) {
   const scoreStrings = [];
-  if (myGuild.db.textXp)
-    scoreStrings.push(`:writing_hand: ${stats.textMessage[time]} (#${positions.textMessage})`);
-  if (myGuild.db.voiceXp)
+  if (myGuild.db.textXp) {
     scoreStrings.push(
-      `:microphone2: ${Math.round((stats.voiceMinute[time] / 60) * 10) / 10} (#${positions.voiceMinute})`,
+      positions.textMessage !== null
+        ? `${emoji('message')} ${stats.textMessage[time]} (#${positions.textMessage})`
+        : // don't show the rank if it's 0
+          `${emoji('message')} ${stats.textMessage[time]}`,
     );
-  if (myGuild.db.inviteXp)
-    scoreStrings.push(`:envelope: ${stats.invite[time]} (#${positions.invite})`);
-  if (myGuild.db.voteXp)
-    scoreStrings.push(`${myGuild.db.voteEmote} ${stats.vote[time]} (#${positions.vote})`);
-  if (myGuild.db.bonusXp)
-    scoreStrings.push(`${myGuild.db.bonusEmote} ${stats.bonus[time]} (#${positions.bonus})`);
+  }
+  if (myGuild.db.voiceXp) {
+    scoreStrings.push(
+      positions.voiceMinute !== null
+        ? `${emoji('voice')} ${Math.round((stats.voiceMinute[time] / 60) * 10) / 10} (#${positions.voiceMinute})`
+        : `${emoji('voice')} ${Math.round((stats.voiceMinute[time] / 60) * 10) / 10}`,
+    );
+  }
+  if (myGuild.db.inviteXp) {
+    scoreStrings.push(
+      positions.invite !== null
+        ? `${emoji('invite')} ${stats.invite[time]} (#${positions.invite})`
+        : `${emoji('invite')} ${stats.invite[time]}`,
+    );
+  }
+  if (myGuild.db.voteXp) {
+    scoreStrings.push(
+      positions.vote !== null
+        ? `${myGuild.db.voteEmote} ${stats.vote[time]} (#${positions.vote})`
+        : `${myGuild.db.voteEmote} ${stats.vote[time]}`,
+    );
+  }
+  if (myGuild.db.bonusXp) {
+    scoreStrings.push(
+      positions.bonus !== null
+        ? `${myGuild.db.bonusEmote} ${stats.bonus[time]} (#${positions.bonus})`
+        : `${myGuild.db.bonusEmote} ${stats.bonus[time]}`,
+    );
+  }
 
   return scoreStrings.join('\n');
 }
@@ -408,7 +501,7 @@ async function getPositions<T extends StatType[]>(
   memberId: string,
   types: T,
   time: StatTimeInterval,
-): Promise<Record<T[number] | 'xp', number>> {
+): Promise<Record<T[number] | 'xp', number | null>> {
   const positions = types.map(
     async (t) =>
       [t, await getGuildMemberStatPosition(guild, memberId, t, time)] as [T[number], number],

@@ -1,7 +1,7 @@
-import { command } from '#bot/commands.js';
-import { EmbedBuilder, ApplicationCommandOptionType } from 'discord.js';
-import { getTexts } from '#models/managerDb/textModel.js';
-import type { PatchnotesEntry, TextsPatchnotes } from '#models/types/external.js';
+import { EmbedBuilder } from 'discord.js';
+import { command } from '#bot/commands.ts';
+import { getTexts } from '#models/managerDb/textModel.ts';
+import type { PatchnotesEntry, TextsPatchnotes } from '#models/types/external.d.ts';
 
 export default command({
   name: 'patchnote',
@@ -47,7 +47,7 @@ export default command({
 function patchnotesMainEmbed(patchnotes: TextsPatchnotes) {
   const embed = new EmbedBuilder()
     .setTitle('**ActivityRank Patchnotes**')
-    .setColor(0x00ae86)
+    .setColor(0x01c3d9)
     .setDescription("Check what's going on with ActivityRank.");
 
   for (const patchnote of patchnotes)
@@ -61,7 +61,7 @@ function patchnotesMainEmbed(patchnotes: TextsPatchnotes) {
 
 function patchnotesVersionEmbed(patchnote: PatchnotesEntry) {
   const embed = new EmbedBuilder()
-    .setColor(0x00ae86)
+    .setColor(0x01c3d9)
     .setTitle(`**Patch ${patchnote.version} - ${patchnote.title} (${patchnote.date})**`);
 
   for (const feature of patchnote.features)

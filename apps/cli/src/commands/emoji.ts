@@ -1,20 +1,22 @@
-import { join as joinPath } from 'node:path';
-import TOML from 'smol-toml';
-import { z } from 'zod';
-import * as p from '@clack/prompts';
-import pc from 'picocolors';
-import { Command, Option, UsageError } from 'clipanion';
-import { ConfigurableCommand } from '../util/classes.ts';
-import { readFile, writeFile } from 'node:fs/promises';
-import type { Writable } from 'node:stream';
 import { createWriteStream } from 'node:fs';
+import { readFile, writeFile } from 'node:fs/promises';
+import { join as joinPath } from 'node:path';
+import type { Writable } from 'node:stream';
+import * as p from '@clack/prompts';
+import { Command, Option } from 'clipanion';
+import pc from 'picocolors';
+import TOML from 'smol-toml';
+import { z } from 'zod/v4';
+import { ConfigurableCommand2 } from '../util/classes.ts';
+import { formatFile } from '../util/format.ts';
+import { findWorkspaceRoot } from '../util/loaders.ts';
 
-export class EmojiDeployCommand extends ConfigurableCommand {
+export class EmojiDeployCommand extends ConfigurableCommand2 {
   static override paths = [['emoji', 'deploy']];
   static override usage = Command.Usage({
     category: 'Deploy',
     description: "Update the bot's Bot Emoji.",
-    details: 'Reading from `packages/assets/emoji`, allows deletion and addition of Bot Emoji.',
+    details: 'Reading from `packages/assets/emoji`, allows creation and deletion of Bot Emoji.',
   });
 
   outputFile = Option.String('-o,--output', {
@@ -31,12 +33,14 @@ export class EmojiDeployCommand extends ConfigurableCommand {
   override async execute() {
     p.intro(pc.bgCyan(pc.blackBright('  Emoji Deployment  ')));
 
-    await super.execute();
+    const { api } = await this.loadBaseConfig();
+    const workspaceRoot = await findWorkspaceRoot(
+      `Could not find the root of the ${pc.cyan('activityrank')} monorepo. A properly configured ActivityRank workspace is necessary for this command to function.`,
+    );
 
     const spin = p.spinner();
-    spin.start('Loading internal resources...');
+    spin.start('Loading...');
 
-    const api = this.getApi();
     const botInfo = await api.applications.getCurrent();
 
     let outputStream: Writable;
@@ -51,24 +55,18 @@ export class EmojiDeployCommand extends ConfigurableCommand {
         outputDisplay = this.outputFile;
       }
     } else {
-      const wsRoot = await this.findWorkspaceRoot();
-      if (!wsRoot) {
-        throw new UsageError(
-          'Could not find workspace root. Either provide an `--output` option or use an ActivityRank workspace.',
-        );
-      }
-      const outputFile = joinPath(wsRoot, 'apps/bot/src/const/emoji.generated.ts');
+      const outputFile = joinPath(workspaceRoot, 'apps/bot/src/const/emoji.generated.ts');
       outputStream = createWriteStream(outputFile);
       outputDisplay = outputFile;
     }
 
-    spin.stop('Loaded internals');
+    spin.stop('Loading...complete');
 
     const currentlyDeployedEmojis = await api.applications.getEmojis(botInfo.id);
     const currentlyDeployedEmojiNames = new Set(
       currentlyDeployedEmojis.items.map((e) => e.name as string),
     );
-    const awaitedEmojis = await this.loadEmojiManifest();
+    const awaitedEmojis = await this.loadEmojiManifest(workspaceRoot);
     const awaitedEmojiNames = new Set(Object.keys(awaitedEmojis));
 
     const deleting = currentlyDeployedEmojis.items
@@ -125,7 +123,7 @@ export class EmojiDeployCommand extends ConfigurableCommand {
       for (const name of add) {
         await api.applications.createEmoji(botInfo.id, {
           name,
-          image: await this.loadEmojiFile(awaitedEmojis[name].path),
+          image: await this.loadEmojiFile(awaitedEmojis[name].path, workspaceRoot),
         });
       }
 
@@ -150,7 +148,7 @@ export class EmojiDeployCommand extends ConfigurableCommand {
         await api.applications.deleteEmoji(botInfo.id, emoji.id);
         await api.applications.createEmoji(botInfo.id, {
           name: emoji.name,
-          image: await this.loadEmojiFile(awaitedEmojis[emoji.name].path),
+          image: await this.loadEmojiFile(awaitedEmojis[emoji.name].path, workspaceRoot),
         });
       }
 
@@ -164,20 +162,17 @@ export class EmojiDeployCommand extends ConfigurableCommand {
       ].join('\n'),
     );
 
+    if (outputDisplay === 'stdout') {
+      await formatFile(outputDisplay);
+    }
+
     if (!this.updateConfig) {
       p.outro(`Emoji typings written to ${pc.gray(outputDisplay)}`);
       return;
     }
     p.log.success(`Emoji typings written to ${pc.gray(outputDisplay)}`);
 
-    const wsRoot = await this.findWorkspaceRoot();
-    if (!wsRoot) {
-      throw new UsageError(
-        'Could not find workspace root. Either provide an `--output` option or use an ActivityRank workspace.',
-      );
-    }
-
-    const emojiFilePath = joinPath(wsRoot, 'config/emoji.json');
+    const emojiFilePath = joinPath(workspaceRoot, 'config/emoji.json');
     const emojiFile = (await readFile(emojiFilePath)).toString();
     const emojiFileData = JSON.parse(emojiFile);
 
@@ -209,32 +204,20 @@ export class EmojiDeployCommand extends ConfigurableCommand {
       emojiFilePath,
       JSON.stringify(Object.fromEntries(currentEmojis.items.map((e) => [e.name, e.id])), null, 2),
     );
+    await formatFile(emojiFilePath);
 
     p.outro(`Emoji IDs written to ${pc.gray('config/emoji.json')}`);
   }
 
-  async loadEmojiManifest() {
-    const wsRoot = await this.findWorkspaceRoot();
-    if (!wsRoot) {
-      throw new UsageError(
-        'Could not find workspace root. Either provide an `--output` option or use an ActivityRank workspace.',
-      );
-    }
-    const manifestPath = joinPath(wsRoot, 'packages/assets/manifest.toml');
+  async loadEmojiManifest(workspaceRoot: string) {
+    const manifestPath = joinPath(workspaceRoot, 'packages/assets/manifest.toml');
     const manifestContent = TOML.parse((await readFile(manifestPath)).toString());
     const manifest = manifestSchema.parse(manifestContent);
     return manifest;
   }
 
-  async loadEmojiFile(path: string): Promise<string> {
-    const wsRoot = await this.findWorkspaceRoot();
-    if (!wsRoot) {
-      throw new UsageError(
-        'Could not find workspace root. Either provide an `--output` option or use an ActivityRank workspace.',
-      );
-    }
-
-    const assetPath = joinPath(wsRoot, 'packages/assets/', path);
+  async loadEmojiFile(path: string, workspaceRoot: string): Promise<string> {
+    const assetPath = joinPath(workspaceRoot, 'packages/assets/', path);
     const filetype = assetPath.split('.').at(-1);
     if (!filetype || !['png', 'jpeg', 'gif'].includes(filetype)) {
       throw new Error(
@@ -247,4 +230,4 @@ export class EmojiDeployCommand extends ConfigurableCommand {
   }
 }
 
-const manifestSchema = z.record(z.object({ path: z.string() }));
+const manifestSchema = z.record(z.string(), z.object({ path: z.string() }));

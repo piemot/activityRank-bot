@@ -1,13 +1,13 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, PermissionFlagsBits } from 'discord.js';
-import { command } from '#bot/commands.js';
-import { useConfirm } from '#bot/util/component.js';
-import { requireUser } from '#bot/util/predicates.js';
-import { ResetGuildStatisticsAndXp } from '#bot/models/resetModel.js';
-import { handleResetCommandsCooldown } from '#bot/util/cooldownUtil.js';
+import { command } from '#bot/commands.ts';
+import { ResetGuildStatisticsAndXp } from '#bot/models/resetModel.ts';
+import { useConfirm } from '#bot/util/component.ts';
+import { handleResetCommandsCooldown } from '#bot/util/cooldownUtil.ts';
+import { requireUser } from '#bot/util/predicates.ts';
 
 export default command({
   name: 'reset server members',
-  async execute({ interaction }) {
+  async execute({ interaction, t }) {
     if (
       interaction.channel &&
       !interaction.member.permissionsIn(interaction.channel).has(PermissionFlagsBits.ManageGuild)
@@ -19,7 +19,7 @@ export default command({
       return;
     }
 
-    if ((await handleResetCommandsCooldown(interaction)).denied) return;
+    if ((await handleResetCommandsCooldown(t, interaction)).denied) return;
 
     const predicate = requireUser(interaction.user);
 

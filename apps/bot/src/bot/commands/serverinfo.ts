@@ -1,31 +1,32 @@
+import Cron from 'croner';
 import {
-  ButtonStyle,
-  ComponentType,
   type ActionRowData,
-  type MessageActionRowComponentData,
-  type ChatInputCommandInteraction,
-  type ButtonInteraction,
-  type StringSelectMenuInteraction,
   type APIEmbed,
+  type ButtonInteraction,
+  ButtonStyle,
+  type ChatInputCommandInteraction,
   type Client,
+  ComponentType,
+  type MessageActionRowComponentData,
+  type StringSelectMenuInteraction,
   time,
 } from 'discord.js';
-import { getGuildModel, type GuildModel } from '../models/guild/guildModel.js';
-import guildChannelModel from '../models/guild/guildChannelModel.js';
+import invariant from 'tiny-invariant';
+import { command } from '#bot/commands.ts';
+import { actionrow, closeButton } from '#bot/util/component.ts';
+import { requireUser } from '#bot/util/predicates.ts';
+import { ComponentKey, component } from '#bot/util/registry/component.ts';
+import { emoji } from '#const/config.ts';
+import { shards } from '#models/shardDb/shardDb.ts';
+import fct, { getPatreonTiers, hasValidEntitlement, type Pagination } from '../../util/fct.ts';
+import guildChannelModel from '../models/guild/guildChannelModel.ts';
+import { type GuildModel, getGuildModel } from '../models/guild/guildModel.ts';
 import {
   fetchNoXpRoleIds,
   fetchRoleAssignments,
   getRoleModel,
-} from '../models/guild/guildRoleModel.js';
-import { shards } from '#models/shardDb/shardDb.js';
-import fct, { type Pagination } from '../../util/fct.js';
-import nameUtil, { getRoleMention } from '../util/nameUtil.js';
-import { command } from '#bot/commands.js';
-import { component, ComponentKey } from '#bot/util/registry/component.js';
-import { requireUser } from '#bot/util/predicates.js';
-import { actionrow, closeButton } from '#bot/util/component.js';
-import Cron from 'croner';
-import { emoji } from '#const/config.js';
+} from '../models/guild/guildRoleModel.ts';
+import nameUtil, { getRoleMention } from '../util/nameUtil.ts';
 
 export default command({
   name: 'serverinfo',
@@ -155,12 +156,14 @@ const pageButton = component<{ windowName: WindowName; page: number }>({
   },
 });
 
+type WindowInteraction =
+  | ChatInputCommandInteraction<'cached'>
+  | ButtonInteraction<'cached'>
+  | StringSelectMenuInteraction<'cached'>;
+
 interface Window {
   embed: (opts: {
-    interaction:
-      | ChatInputCommandInteraction<'cached'>
-      | ButtonInteraction<'cached'>
-      | StringSelectMenuInteraction<'cached'>;
+    interaction: WindowInteraction;
     cachedGuild: GuildModel;
     page: Pagination;
   }) => Promise<APIEmbed>;
@@ -168,8 +171,12 @@ interface Window {
   enablePagination: boolean;
 }
 
-// biome-ignore lint/style/noNonNullAssertion: client.user will always exist when the bot is logged in properly
-const clientURL = (client: Client): string => client.user!.avatarURL()!;
+const clientURL = (client: Client): string => {
+  const user = client.user;
+  invariant(user, 'client.user will always exist when the bot is logged in properly');
+  const avatar = user.avatarURL();
+  return avatar as string;
+};
 
 const general: Window = {
   additionalComponents: () => [],
@@ -188,18 +195,19 @@ const general: Window = {
       );
       notifyLevelupType = `#${channelName}`;
     } else {
-      notifyLevelupType = 'None';
+      notifyLevelupType = emoji('no');
     }
 
-    // TODO(style): replace with custom emojis
-    const yesno = (cond: boolean | number): string => (cond ? 'Yes' : 'No');
+    const yesno = (cond: boolean | number): string => (cond ? emoji('yes') : emoji('no'));
+
+    const premiumStatus = await displayPremiumStatus(interaction);
 
     const generalValue = [
       `Tracking since: <t:${cachedGuild.db.addDate}:D>`,
       `Tracking stats: ${
-        (cachedGuild.db.textXp ? ':writing_hand: ' : '') +
-        (cachedGuild.db.voiceXp ? ':microphone2: ' : '') +
-        (cachedGuild.db.inviteXp ? ':envelope: ' : '') +
+        (cachedGuild.db.textXp ? `${emoji('message')} ` : '') +
+        (cachedGuild.db.voiceXp ? `${emoji('voice')} ` : '') +
+        (cachedGuild.db.inviteXp ? `${emoji('invite')} ` : '') +
         (cachedGuild.db.voteXp ? `${cachedGuild.db.voteEmote} ` : '') +
         (cachedGuild.db.bonusXp ? `${cachedGuild.db.bonusEmote} ` : '')
       }`,
@@ -207,7 +215,7 @@ const general: Window = {
       `Include levelup message: ${yesno(cachedGuild.db.notifyLevelupWithRole)}`,
       `Take away assigned roles on level down: ${yesno(cachedGuild.db.takeAwayAssignedRolesOnLevelDown)}`,
       `List entries per page: ${cachedGuild.db.entriesPerPage}`,
-      `Status: ${(await fct.getPatreonTiers(interaction)).ownerTier === 2 ? 'Premium' : 'Not Premium'}`,
+      `Premium: ${premiumStatus}`,
     ].join('\n');
 
     const textmessageCooldownString = cachedGuild.db.textMessageCooldownSeconds
@@ -249,7 +257,7 @@ const general: Window = {
         name: `Info for ${interaction.guild.name}`,
         icon_url: clientURL(interaction.client),
       },
-      color: 0x4fd6c8,
+      color: 0x01c3d9,
       thumbnail: guildIcon ? { url: guildIcon } : undefined,
       fields: [
         { name: '**General**', value: generalValue },
@@ -259,6 +267,19 @@ const general: Window = {
     };
   },
 };
+
+async function displayPremiumStatus(interaction: WindowInteraction): Promise<string> {
+  if (hasValidEntitlement(interaction)) {
+    return emoji('store');
+  }
+
+  const patreon = await getPatreonTiers(interaction);
+  if (patreon.ownerTier >= 2) {
+    return emoji('yes');
+  } else {
+    return emoji('no');
+  }
+}
 
 const levels: Window = {
   additionalComponents: () => [],
@@ -283,7 +304,7 @@ const levels: Window = {
         // TODO(style): consider replacing `-` and `+` with emojis
         roleAssignments
           .filter((r) => r.deassignLevel === level)
-          .map((r) => `**\-** <@&${r.roleId}>`),
+          .map((r) => `**-** <@&${r.roleId}>`),
         roleAssignments.filter((r) => r.assignLevel === level).map((r) => `**+** <@&${r.roleId}>`),
       ]
         .flat()
@@ -295,7 +316,7 @@ const levels: Window = {
         name: `Levels from ${page.from + 1} to ${page.to + 1}`,
         icon_url: clientURL(interaction.client),
       },
-      color: 0x4fd6c8,
+      color: 0x01c3d9,
       description: `Levelfactor: ${cachedGuild.db.levelFactor}\n-# The levelfactor is the amount of extra XP each level needs.\n*XP needed to reach the next level (xp needed to reach this level from Level 1)*`,
       fields: levels.map((level) => ({
         name: `${emoji('level')}${level.number}`,
@@ -329,7 +350,7 @@ const roles: Window = {
 
     return {
       author: { name: 'Activity Roles', icon_url: clientURL(interaction.client) },
-      color: 0x4fd6c8,
+      color: 0x01c3d9,
       description: relevantLevels.length > 0 ? undefined : '-# No roles have been configured yet.',
       fields: relevantLevels
         .map((level) => ({
@@ -337,7 +358,7 @@ const roles: Window = {
           value: [
             roleAssignments
               .filter((r) => r.deassignLevel === level)
-              .map((r) => `**\-** ${getRoleMention(interaction.guild.roles.cache, r.roleId)}`),
+              .map((r) => `**-** ${getRoleMention(interaction.guild.roles.cache, r.roleId)}`),
             roleAssignments
               .filter((r) => r.assignLevel === level)
               .map((r) => `**+** ${getRoleMention(interaction.guild.roles.cache, r.roleId)}`),
@@ -386,7 +407,7 @@ const noxpchannels: Window = {
         name: 'No-XP Channels',
         icon_url: clientURL(interaction.client),
       },
-      color: 0x4fd6c8,
+      color: 0x01c3d9,
       description: description.join('\n'),
     };
   },
@@ -420,7 +441,7 @@ const noxproles: Window = {
         name: 'No-XP Roles',
         icon_url: clientURL(interaction.client),
       },
-      color: 0x4fd6c8,
+      color: 0x01c3d9,
       description: description.join('\n'),
     };
   },
@@ -483,7 +504,7 @@ const xpsettings: Window = {
 
     return {
       author: { name: 'XP Settings', icon_url: clientURL(interaction.client) },
-      color: 0x4fd6c8,
+      color: 0x01c3d9,
       description: `**Default XP**\nLevelfactor: ${cachedGuild.db.levelFactor} XP\n${xpPerString}\n\n${roleEntries}`,
     };
   },
@@ -515,7 +536,7 @@ const messages: Window = {
 
     return {
       author: { name: 'Autosend Messages', icon_url: clientURL(interaction.client) },
-      color: 0x4fd6c8,
+      color: 0x01c3d9,
       fields: entries.slice(page.from - 1, page.to),
     };
   },

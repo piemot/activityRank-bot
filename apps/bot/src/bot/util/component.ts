@@ -1,5 +1,9 @@
 import {
   type ActionRowData,
+  type APIButtonComponent,
+  type APISectionComponent,
+  type APITextDisplayComponent,
+  type APIThumbnailComponent,
   type ButtonInteraction,
   type ComponentInContainerData,
   ComponentType,
@@ -8,7 +12,7 @@ import {
   type MessageActionRowComponentData,
   type ModalActionRowComponentData,
 } from 'discord.js';
-import { component, type ComponentCallback } from './registry/component.js';
+import { type ComponentCallback, component } from './registry/component.ts';
 
 type CallbackFn<D> = ComponentCallback<ButtonInteraction<'cached'>, D>;
 
@@ -53,6 +57,25 @@ export function container(
   return { type: ComponentType.Container, components, ...opts };
 }
 
+export function section(
+  _components: APITextDisplayComponent | APITextDisplayComponent[],
+  accessory: APIButtonComponent | APIThumbnailComponent,
+): APISectionComponent {
+  let components: APITextDisplayComponent[];
+
+  if (Array.isArray(_components)) {
+    components = _components;
+  } else {
+    components = [_components];
+  }
+
+  return { type: ComponentType.Section, components, accessory };
+}
+
+export function textDisplay(content: string, id?: number): APITextDisplayComponent {
+  return { type: ComponentType.TextDisplay, content, id };
+}
+
 /**
  * Create a button that deletes the current message when pressed.
  */
@@ -64,3 +87,24 @@ export const closeButton = component({
     drop();
   },
 });
+
+/**
+ * Create a custom ID string that will not be picked up by the
+ * component management system (in `bot/util/registry`)
+ */
+export const makeCustomId2 = (customId: string): string => `2.0#${customId}`;
+
+const CUSTOM_ID_2 = /^2.0#(?<id>.*)/;
+
+/**
+ * Parse a custom ID string that was constructed by the {@link makeCustomId2} function.
+ * Returns only the `customId` string provided to that function.
+ */
+export const parseCustomId2 = (givenId: string): string => {
+  const parse = CUSTOM_ID_2.exec(givenId);
+  const id = parse?.groups?.id;
+  return id ?? '';
+};
+
+export const makeCID2 = makeCustomId2;
+export const parseCID2 = parseCustomId2;

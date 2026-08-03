@@ -1,14 +1,14 @@
 {
   "name": "@activityrank/database",
   "description": "The database interface and typings package",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "private": "true",
   "type": "module",
-  "main": "dist/src/index.js",
-  "types": "dist/src/index.d.ts",
+  "main": "src/index.ts",
   "scripts": {
-    "build": "tsc",
-    "test": "vitest --run"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest --run",
+    "format": "node ./scripts/format.mjs"
   },
   "contributors": [
     "@rapha01 (https://github.com/rapha01)",
@@ -16,13 +16,14 @@
     "the ActivityRank Contributors ❤️"
   ],
   "dependencies": {
-    "kysely": "^0.27.4",
-    "mysql2": "^3.12.0"
+    "kysely": "^0.28.8",
+    "mysql2": "^3.15.3"
   },
   "devDependencies": {
     "@activityrank/tsconfig": "workspace:*",
-    "@types/node": "^22.10.2",
-    "typescript": "^5.7.2",
+    "@types/node": "^24.10.1",
+    "markdown-table-prettify": "^3.7.0",
+    "typescript": "^5.9.3",
     "vitest": "^2.1.1"
   }
 }

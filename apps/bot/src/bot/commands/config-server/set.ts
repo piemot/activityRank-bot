@@ -1,22 +1,22 @@
 import {
-  ButtonStyle,
-  PermissionFlagsBits,
-  ComponentType,
-  MessageFlags,
-  SelectMenuDefaultValueType,
-  ChannelType,
   type BaseMessageOptions,
+  ButtonStyle,
+  ChannelType,
   type ComponentInContainerData,
+  ComponentType,
   type ContainerComponentData,
+  MessageFlags,
+  PermissionFlagsBits,
+  SelectMenuDefaultValueType,
   type User,
 } from 'discord.js';
-import { getGuildModel, type GuildModel } from '../../models/guild/guildModel.js';
-import { command } from '#bot/commands.js';
-import { actionrow, container } from '#bot/util/component.js';
-import { requireUser } from '#bot/util/predicates.js';
-import { component, type ComponentPredicateConfig } from '#bot/util/registry/component.js';
 import type { TFunction } from 'i18next';
-import { assertUnreachable } from '#bot/util/typescript.js';
+import { command } from '#bot/commands.ts';
+import { actionrow, container } from '#bot/util/component.ts';
+import { requireUser } from '#bot/util/predicates.ts';
+import { type ComponentPredicateConfig, component } from '#bot/util/registry/component.ts';
+import { assertUnreachable } from '#bot/util/typescript.ts';
+import { type GuildModel, getGuildModel } from '../../models/guild/guildModel.ts';
 
 type BooleanGuildKey =
   | 'showNicknames'
@@ -110,7 +110,7 @@ async function renderPage(
         renderPageItem({ ...globalOpts, id: 'resetDeletedMembers' }),
         renderPageItem({ ...globalOpts, id: 'stickyLevelRoles' }),
       ],
-      { accentColor: 0x00ae86 },
+      { accentColor: 0x01c3d9 },
     );
   } else if (id === 'voice') {
     main = container(
@@ -120,7 +120,7 @@ async function renderPage(
         renderPageItem({ ...globalOpts, id: 'allowDeafenedXp', buttonTranslation: 'allowed' }),
         renderPageItem({ ...globalOpts, id: 'allowSoloXp', buttonTranslation: 'allowed' }),
       ],
-      { accentColor: 0x00ae86 },
+      { accentColor: 0x01c3d9 },
     );
   } else if (id === 'notify') {
     main = container(
@@ -170,9 +170,41 @@ async function renderPage(
             channelTypes: [ChannelType.GuildText],
           },
         ]),
+        {
+          type: ComponentType.Section,
+          components: [
+            {
+              type: ComponentType.TextDisplay,
+              content: `### ${t('config-server.notifyJoinSetChannel.label')}\n${t('config-server.notifyJoinSetChannel.description')}`,
+            },
+          ],
+          accessory: {
+            type: ComponentType.Button,
+            customId: clearJoinChannel.instanceId({ data: { page }, predicate }),
+            style: ButtonStyle.Danger,
+            label: t('config-server.button.clear'),
+            disabled: cachedGuild.db.autopost_serverJoin === '0',
+          },
+        },
+        actionrow([
+          {
+            type: ComponentType.ChannelSelect,
+            customId: setJoinChannel.instanceId({ data: { page }, predicate }),
+            defaultValues:
+              cachedGuild.db.autopost_serverJoin === '0'
+                ? []
+                : [
+                    {
+                      id: cachedGuild.db.autopost_serverJoin,
+                      type: SelectMenuDefaultValueType.Channel,
+                    },
+                  ],
+            channelTypes: [ChannelType.GuildText],
+          },
+        ]),
         renderPageItem({ ...globalOpts, id: 'notifyLevelupWithRole' }),
       ],
-      { accentColor: 0x00ae86 },
+      { accentColor: 0x01c3d9 },
     );
   } else if (id === 'types') {
     main = container(
@@ -183,7 +215,7 @@ async function renderPage(
         renderPageItem({ ...globalOpts, id: 'inviteXp' }),
         renderPageItem({ ...globalOpts, id: 'voteXp' }),
       ],
-      { accentColor: 0x00ae86 },
+      { accentColor: 0x01c3d9 },
     );
   } else {
     assertUnreachable(id);
@@ -334,6 +366,34 @@ const setLevelupChannel = component<{ page: PageId }>({
     const cachedGuild = await getGuildModel(interaction.guild);
 
     await cachedGuild.upsert({ autopost_levelup: interaction.values[0] });
+
+    await interaction.update({
+      components: await renderPage(t, data.page, cachedGuild, interaction.user),
+    });
+  },
+});
+
+const clearJoinChannel = component<{ page: PageId }>({
+  type: ComponentType.Button,
+  autoDestroy: true,
+  async callback({ interaction, data, t }) {
+    const cachedGuild = await getGuildModel(interaction.guild);
+
+    await cachedGuild.upsert({ autopost_serverJoin: '0' });
+
+    await interaction.update({
+      components: await renderPage(t, data.page, cachedGuild, interaction.user),
+    });
+  },
+});
+
+const setJoinChannel = component<{ page: PageId }>({
+  type: ComponentType.ChannelSelect,
+  autoDestroy: true,
+  async callback({ interaction, data, t }) {
+    const cachedGuild = await getGuildModel(interaction.guild);
+
+    await cachedGuild.upsert({ autopost_serverJoin: interaction.values[0] });
 
     await interaction.update({
       components: await renderPage(t, data.page, cachedGuild, interaction.user),

@@ -1,20 +1,19 @@
-/* 🛠️ This file was generated with `activityrank generate` on Fri Feb 21 2025. */
+/* 🛠️ This file was generated with `activityrank generate` on Sat Dec 06 2025. */
 
-import { Command, type OptionKey, type CommandPredicateConfig } from './command.js';
 import type {
-  Attachment,
   AutocompleteInteraction,
+  ChannelType,
   ChatInputCommandInteraction,
   Client,
-  ChannelType,
   GuildChannel,
-  ThreadChannel,
-  MessageContextMenuCommandInteraction,
   Role,
+  ThreadChannel,
   User,
   UserContextMenuCommandInteraction,
 } from 'discord.js';
 import type { TFunction } from 'i18next';
+import { Command, type CommandPredicateConfig, type OptionKey } from './command.ts';
+
 type CommandReturn = Promise<void> | void;
 
 export function command(options: {
@@ -129,6 +128,18 @@ export function command(options: {
 }): Command;
 export function command(options: {
   name: 'reset deleted channel';
+  predicate?: CommandPredicateConfig;
+  execute: (args: {
+    interaction: ChatInputCommandInteraction<'cached'>;
+    client: Client;
+    t: TFunction<'command-content'>;
+    options: {
+      id: string;
+    };
+  }) => CommandReturn;
+}): Command;
+export function command(options: {
+  name: 'reset deleted role';
   predicate?: CommandPredicateConfig;
   execute: (args: {
     interaction: ChatInputCommandInteraction<'cached'>;
@@ -477,6 +488,45 @@ export function command(options: {
   }) => CommandReturn;
 }): Command;
 export function command(options: {
+  name: 'update-roles';
+  predicate?: CommandPredicateConfig;
+  execute: (args: {
+    interaction: ChatInputCommandInteraction<'cached'>;
+    client: Client;
+    t: TFunction<'command-content'>;
+  }) => CommandReturn;
+}): Command;
+export function command(options: {
+  name: 'customize-bot';
+  predicate?: CommandPredicateConfig;
+  execute: (args: {
+    interaction: ChatInputCommandInteraction<'cached'>;
+    client: Client;
+    t: TFunction<'command-content'>;
+  }) => CommandReturn;
+}): Command;
+export function command(options: {
+  name: 'leaderboard activate';
+  predicate?: CommandPredicateConfig;
+  execute: (args: {
+    interaction: ChatInputCommandInteraction<'cached'>;
+    client: Client;
+    t: TFunction<'command-content'>;
+    options: {
+      channel: Extract<GuildChannel | ThreadChannel, { type: ChannelType }>;
+    };
+  }) => CommandReturn;
+}): Command;
+export function command(options: {
+  name: 'leaderboard destroy';
+  predicate?: CommandPredicateConfig;
+  execute: (args: {
+    interaction: ChatInputCommandInteraction<'cached'>;
+    client: Client;
+    t: TFunction<'command-content'>;
+  }) => CommandReturn;
+}): Command;
+export function command(options: {
   name: 'blacklist user';
   predicate?: CommandPredicateConfig;
   execute: (args: {
@@ -510,6 +560,7 @@ export function command(options: {
     options: {
       eval: string;
       async?: boolean;
+      'server-id'?: string;
       depth?: number;
       'show-hidden'?: boolean;
       visible?: boolean;
@@ -591,6 +642,7 @@ export const COMMAND_META: {
   'reset server xp': { optionGetters: {}, type: 'subcommand' },
   'reset server all': { optionGetters: {}, type: 'subcommand' },
   'reset deleted channel': { optionGetters: { id: ['value'] }, type: 'subcommand' },
+  'reset deleted role': { optionGetters: { id: ['value'] }, type: 'subcommand' },
   'reset deleted channels': { optionGetters: {}, type: 'subcommand' },
   'reset deleted members': { optionGetters: {}, type: 'subcommand' },
   memberinfo: { optionGetters: { member: ['user'] }, type: 'base-command' },
@@ -657,12 +709,17 @@ export const COMMAND_META: {
   },
   top: { optionGetters: {}, type: 'base-command' },
   rank: { optionGetters: { member: ['user'] }, type: 'base-command' },
+  'update-roles': { optionGetters: {}, type: 'base-command' },
+  'customize-bot': { optionGetters: {}, type: 'base-command' },
+  'leaderboard activate': { optionGetters: { channel: ['channel'] }, type: 'subcommand' },
+  'leaderboard destroy': { optionGetters: {}, type: 'subcommand' },
   'blacklist user': { optionGetters: { user: ['user'] }, type: 'subcommand' },
   'blacklist guild': { optionGetters: { id: ['value'] }, type: 'subcommand' },
   eval: {
     optionGetters: {
       eval: ['value'],
       async: ['value'],
+      'server-id': ['value'],
       depth: ['value'],
       'show-hidden': ['value'],
       visible: ['value'],

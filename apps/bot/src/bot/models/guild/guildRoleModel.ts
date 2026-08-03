@@ -1,8 +1,8 @@
 import type { ShardDB } from '@activityrank/database';
-import { shards } from '#models/shardDb/shardDb.js';
 import type { Guild, Role } from 'discord.js';
-import { getGuildModel } from './guildModel.js';
-import { CachedModel } from '../generic/model.js';
+import { shards } from '#models/shardDb/shardDb.ts';
+import { CachedModel } from '../generic/model.ts';
+import { getGuildModel } from './guildModel.ts';
 
 const cachedFields = [
   'noXp',
@@ -131,7 +131,7 @@ export async function fetchRoleAssignmentsByLevel(
     .execute();
 }
 
-export async function fetchRoleAssignmentsByRole(guild: Guild, roleId: string) {
+export async function fetchRoleAssignmentByRole(guild: Guild, roleId: string) {
   const { dbHost } = await getGuildModel(guild);
 
   return await shards
@@ -140,7 +140,7 @@ export async function fetchRoleAssignmentsByRole(guild: Guild, roleId: string) {
     .select(['roleId', 'assignLevel', 'deassignLevel', 'assignMessage', 'deassignMessage'])
     .where('guildId', '=', guild.id)
     .where('roleId', '=', roleId)
-    .execute();
+    .executeTakeFirst();
 }
 
 export async function fetchNoXpRoleIds(guild: Guild) {

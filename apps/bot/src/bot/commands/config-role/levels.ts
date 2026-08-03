@@ -1,12 +1,13 @@
-import { PermissionFlagsBits, type APIEmbed } from 'discord.js';
-import { commaListsAnd } from 'common-tags';
+import { PermissionFlagsBits } from 'discord.js';
+import invariant from 'tiny-invariant';
+import { command } from '#bot/commands.ts';
+import { DANGEROUS_PERMISSIONS, DANGEROUS_PERMISSIONS_NAMES } from '#bot/levelManager.ts';
 import {
+  fetchRoleAssignmentByRole,
   fetchRoleAssignmentsByLevel,
-  fetchRoleAssignmentsByRole,
   getRoleModel,
-} from '#bot/models/guild/guildRoleModel.js';
-import nameUtil from '../../util/nameUtil.js';
-import { command } from '#bot/commands.js';
+} from '#bot/models/guild/guildRoleModel.ts';
+import nameUtil from '../../util/nameUtil.ts';
 
 export default command({
   name: 'config-role levels',
@@ -30,12 +31,9 @@ export default command({
       return;
     }
 
-    if (
-      !interaction.guild.members.me ||
-      !interaction.guild.members.me
-        .permissionsIn(interaction.channel)
-        .has(PermissionFlagsBits.ManageRoles)
-    ) {
+    invariant(interaction.guild.members.me);
+
+    if (!interaction.guild.members.me.permissions.has(PermissionFlagsBits.ManageRoles)) {
       await interaction.reply({ content: t('config-role.manageRoles'), ephemeral: true });
       return;
     }
@@ -43,15 +41,10 @@ export default command({
     const items = {
       assignLevel: options['assign-level'],
       deassignLevel: options['deassign-level'],
-    };
+    } as const;
 
     if (items.assignLevel && items.deassignLevel && items.assignLevel >= items.deassignLevel) {
       await interaction.reply({ content: t('config-role.error1', items), ephemeral: true });
-      return;
-    }
-
-    if (Object.values(items).every((x) => x === undefined)) {
-      await interaction.reply({ content: t('missing.option'), ephemeral: true });
       return;
     }
 
@@ -64,42 +57,58 @@ export default command({
 
       const roleAssignmentsByLevel = await fetchRoleAssignmentsByLevel(interaction.guild, k, item);
       if (item !== 0 && roleAssignmentsByLevel.length >= 3) {
-        await interaction.reply({ content: t('config-role.maxRoles'), ephemeral: true });
+        await interaction.reply({
+          content: t('config-role.maxRoles', { level: item }),
+          ephemeral: true,
+        });
         return;
       }
       await cachedRole.upsert({ [k]: item });
     }
 
-    const roleAssignments = await fetchRoleAssignmentsByRole(interaction.guild, resolvedRole.id);
+    const roleAssignment = await fetchRoleAssignmentByRole(interaction.guild, resolvedRole.id);
+    const roleMention = nameUtil.getRoleMention(interaction.guild.roles.cache, resolvedRole.id);
 
-    const embed: APIEmbed = {
-      author: { name: t('config-role.roleAdded') },
-      color: 0x00ae86,
-      description: nameUtil.getRoleMention(interaction.guild.roles.cache, resolvedRole.id),
-    };
+    const description = [`> ${roleMention}`];
 
-    const roleAssignLevels = roleAssignments
-      .map((o) => (o.assignLevel !== 0 ? `\`${o.assignLevel}\`` : null))
-      .filter((o) => o !== null);
+    // does a role have dangerous permissions?
+    const dangerous = resolvedRole.permissions.any(DANGEROUS_PERMISSIONS);
+    // does the role have an assignLevel?
+    const isAssigned = roleAssignment?.assignLevel && roleAssignment.assignLevel !== 0;
+    // does the role have a deassignLevel?
+    const isDeassigned = roleAssignment?.deassignLevel && roleAssignment.deassignLevel !== 0;
 
-    const roleDeassignLevels = roleAssignments
-      .map((o) => (o.deassignLevel !== 0 ? `\`${o.deassignLevel}\`` : null))
-      .filter((o) => o !== null);
-
-    if (!roleAssignLevels.every((o) => o === null)) {
-      embed.fields = [
-        ...(embed.fields ?? []),
-        { name: t('config-role.assignlevel'), value: commaListsAnd(`${roleAssignLevels}`) },
-      ];
+    if (isAssigned) {
+      description.push(`* **${t('config-role.assignlevel')}**: \`${roleAssignment.assignLevel}\``);
+      if (dangerous) {
+        description.push('> Warning: This role has Dangerous permissions.');
+      }
     }
 
-    if (!roleDeassignLevels.every((o) => o === null)) {
-      embed.fields = [
-        ...(embed.fields ?? []),
-        { name: t('config-role.deassignlevel'), value: commaListsAnd(`${roleDeassignLevels}`) },
-      ];
+    if (isDeassigned) {
+      description.push(
+        `* **${t('config-role.deassignlevel')}**: \`${roleAssignment.deassignLevel}\``,
+      );
     }
 
-    await interaction.reply({ embeds: [embed], ephemeral: true });
+    if (isAssigned && dangerous) {
+      const fmt = new Intl.ListFormat('en', { style: 'long', type: 'conjunction' });
+      const list = fmt.format(DANGEROUS_PERMISSIONS_NAMES);
+      description.push('### Dangerous Permissions');
+      description.push(
+        `As a safety measure, ActivityRank avoids assigning "dangerous" roles. Dangerous roles are those that have permissions that may cause harm to a server, such as ${list}. Please remove these permissions from ${roleMention}.`,
+      );
+    }
+
+    await interaction.reply({
+      embeds: [
+        {
+          author: { name: t('config-role.roleAdded') },
+          color: 0x01c3d9,
+          description: description.join('\n'),
+        },
+      ],
+      ephemeral: true,
+    });
   },
 });

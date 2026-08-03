@@ -1,17 +1,21 @@
-import { hasPrivilege, privileges, type PrivilegeLevel } from '#const/config.js';
-import type { CommandPredicateConfig } from './registry/command.js';
-import { Predicate } from './registry/predicate.js';
 import type {
   ChatInputCommandInteraction,
   ContextMenuCommandInteraction,
   GuildMember,
   User,
 } from 'discord.js';
-import type { ComponentPredicateConfig } from './registry/component.js';
+import {
+  getStaffEntitlement,
+  hasStaffEntitlement,
+  type StaffEntitlementLevel,
+} from '#const/config.ts';
+import type { CommandPredicateConfig } from './registry/command.ts';
+import type { ComponentPredicateConfig } from './registry/component.ts';
+import type { Predicate } from './registry/predicate.ts';
 
-function userHasPrivilege(user: User, privilege: PrivilegeLevel): Predicate {
-  const userPrivileges = privileges[user.id];
-  return hasPrivilege(privilege, userPrivileges) ? Predicate.Allow : Predicate.Deny;
+function userHasStaffLevel(user: User, requiredLevel: StaffEntitlementLevel): Predicate {
+  const { isStaff, entitlementLevel } = getStaffEntitlement(user.id);
+  return isStaff && hasStaffEntitlement(requiredLevel, entitlementLevel) ? 'ALLOW' : 'DENY';
 }
 
 async function INVALID_CALLBACK(
@@ -19,7 +23,7 @@ async function INVALID_CALLBACK(
 ) {
   interaction.client.logger.warn(
     { interaction },
-    'Unauthorised attempt to access privileged command',
+    'Unauthorised attempt to access restricted command',
   );
   await interaction.reply({
     content:
@@ -28,17 +32,17 @@ async function INVALID_CALLBACK(
 }
 
 export const DEVELOPER_ONLY: CommandPredicateConfig = {
-  validate: (user) => userHasPrivilege(user, 'DEVELOPER'),
+  validate: (user) => userHasStaffLevel(user, 'DEVELOPER'),
   invalidCallback: INVALID_CALLBACK,
 };
 
 export const MODERATOR_ONLY: CommandPredicateConfig = {
-  validate: (user) => userHasPrivilege(user, 'MODERATOR'),
+  validate: (user) => userHasStaffLevel(user, 'MODERATOR'),
   invalidCallback: INVALID_CALLBACK,
 };
 
 export const HELPSTAFF_ONLY: CommandPredicateConfig = {
-  validate: (user) => userHasPrivilege(user, 'HELPSTAFF'),
+  validate: (user) => userHasStaffLevel(user, 'HELPSTAFF'),
   invalidCallback: INVALID_CALLBACK,
 };
 
@@ -47,7 +51,7 @@ export const requireUserId = (memberId: string): ComponentPredicateConfig => ({
     await interaction.reply({ content: 'This component is not for you!', ephemeral: true });
   },
   validate(interaction) {
-    return interaction.user.id === memberId ? Predicate.Allow : Predicate.Deny;
+    return interaction.user.id === memberId ? 'ALLOW' : 'DENY';
   },
 });
 

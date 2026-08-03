@@ -1,17 +1,21 @@
 {
   "botAuth": "",
   "botId": "888488557352747020",
+  "proxy": "http://127.0.0.1:3001/api",
+  "dblApiKey": "",
+  "patreonAccessToken": "",
   "managerApiAuth": "",
+  "managerApiHost": "",
   "managerHost": "",
-  "managerPort": null,
+  "managerApiPort": 3000,
   "managerDb": {
-    "dbName": "",
+    "dbUser": "",
     "dbPassword": "",
-    "dbUser": ""
+    "dbName": ""
   },
   "shardDb": {
-    "dbName": "",
+    "dbUser": "",
     "dbPassword": "",
-    "dbUser": ""
+    "dbName": ""
   }
 }

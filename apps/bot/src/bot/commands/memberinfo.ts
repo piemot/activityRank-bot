@@ -1,23 +1,24 @@
-import { ApplicationCommandOptionType, time, type APIEmbed, type Guild } from 'discord.js';
-import { getMemberModel } from '../models/guild/guildMemberModel.js';
-import { getGuildModel } from '../models/guild/guildModel.js';
-import { getUserModel } from '../models/userModel.js';
-import nameUtil, { getGuildMemberInfo } from '../util/nameUtil.js';
-import { handleStatCommandsCooldown } from '../util/cooldownUtil.js';
-import { stripIndent } from 'common-tags';
-import fct from '../../util/fct.js';
-import { shards } from '#models/shardDb/shardDb.js';
-import { command } from '#bot/commands.js';
-import { resolveMember } from '#bot/util/parser.js';
+import { type APIEmbed, type Guild, time } from 'discord.js';
+import { outdent } from 'outdent';
+import { command } from '#bot/commands.ts';
+import { resolveMember } from '#bot/util/parser.ts';
+import { emoji } from '#const/config.ts';
+import { shards } from '#models/shardDb/shardDb.ts';
+import fct from '../../util/fct.ts';
+import { getMemberModel } from '../models/guild/guildMemberModel.ts';
+import { getGuildModel } from '../models/guild/guildModel.ts';
+import { getUserModel } from '../models/userModel.ts';
+import { handleStatCommandsCooldown } from '../util/cooldownUtil.ts';
+import nameUtil, { getGuildMemberInfo } from '../util/nameUtil.ts';
 
 export default command({
   name: 'memberinfo',
-  async execute({ interaction, options }) {
+  async execute({ interaction, options, t }) {
     const member = (await resolveMember(options.member, interaction)) ?? interaction.member;
 
     const cachedGuild = await getGuildModel(interaction.guild);
 
-    if ((await handleStatCommandsCooldown(interaction)).denied) return;
+    if ((await handleStatCommandsCooldown(t, interaction)).denied) return;
 
     const userModel = await getUserModel(member.user);
     const myTargetUser = await userModel.fetch();
@@ -29,7 +30,7 @@ export default command({
     const lastActivities = await getLastActivities(interaction.guild, member.id);
 
     const inviterInfo = await getGuildMemberInfo(interaction.guild, myTargetMember.inviter);
-    if (inviterInfo.name === 'User left [0]')
+    if (myTargetMember.inviter === '0')
       inviterInfo.name = 'No inviter set. Use `/inviter` to set one!';
 
     const getActivityString = (
@@ -39,8 +40,8 @@ export default command({
       lastTime: number | null,
     ): string | null => {
       if (!enabled) return null;
-      const timeString = lastTime ? `${time(lastTime)}, ${time(lastTime, 'R')}` : 'n/a';
-      return enabled ? `Last ${name}: ${timeString}` : null;
+      const timeString = lastTime ? `${time(lastTime)}, ${time(lastTime, 'R')}` : emoji('no');
+      return `Last ${name}: ${timeString}`;
     };
 
     const lastActivityStr = [
@@ -64,30 +65,32 @@ export default command({
 
     const patreonText =
       patreonTierUntilDate.getTime() > Date.now() / 1000 && myTargetUser.patreonTier > 0
-        ? stripIndent`
+        ? outdent`
           Active Tier: ${myTargetUser.patreonTier} (${fct.getPatreonTierName(
             myTargetUser.patreonTier,
           )})
           Valid until: ${time(patreonTierUntilDate, 'D')}, ${time(patreonTierUntilDate, 'R')}`
-        : 'No active Tier';
+        : `${emoji('no')} No active Tier`;
+
+    const yesno = (cond: boolean | number): string => (cond ? emoji('yes') : emoji('no'));
 
     const embed: APIEmbed = {
       author: { name: `Info for ${targetMemberInfo.name} in ${interaction.guild.name}` },
-      color: 0x4fd6c8,
+      color: 0x01c3d9,
       thumbnail: targetMemberInfo.avatarUrl ? { url: targetMemberInfo.avatarUrl } : undefined,
       fields: [
         {
           name: 'General',
-          value: stripIndent`
-        Joined: <t:${targetMemberInfo.joinedAt}:D>, <t:${targetMemberInfo.joinedAt}:R>
-        Inviter: ${inviterInfo.name}`,
+          value: outdent`
+            Joined: <t:${targetMemberInfo.joinedAt}:D>, <t:${targetMemberInfo.joinedAt}:R>
+            Inviter: ${inviterInfo.name}`,
         },
         { name: 'Patreon', value: patreonText },
         {
           name: 'Settings',
-          value: stripIndent`
-        Notify levelup via Direct Message: ${cachedGuild.db.notifyLevelupDm ? 'Yes' : 'No'}
-        Reaction Vote: ${cachedGuild.db.reactionVote ? 'Yes' : 'No'}`,
+          value: outdent`
+            Notify levelup via Direct Message: ${yesno(cachedGuild.db.notifyLevelupDm)}
+            Reaction Vote: ${yesno(cachedGuild.db.reactionVote)}`,
         },
         { name: 'Recent Activity', value: lastActivityStr },
       ],

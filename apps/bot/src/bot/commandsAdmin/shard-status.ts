@@ -1,8 +1,9 @@
-import { command } from '#bot/commands.js';
-import { HELPSTAFF_ONLY } from '#bot/util/predicates.js';
-import { AttachmentBuilder, EmbedBuilder, Status, ApplicationCommandOptionType } from 'discord.js';
-import { DurationFormatter } from '@sapphire/duration';
-import { managerFetch } from '../../models/managerDb/managerDb.js';
+import { DurationFormat } from '@formatjs/intl-durationformat';
+import { AttachmentBuilder, EmbedBuilder, Status } from 'discord.js';
+import { Temporal } from 'temporal-polyfill';
+import { command } from '#bot/commands.ts';
+import { HELPSTAFF_ONLY } from '#bot/util/predicates.ts';
+import { managerFetch } from '../../models/managerDb/managerDb.ts';
 
 interface APIShard {
   shardId: number;
@@ -22,7 +23,7 @@ export default command({
 
     await interaction.deferReply({ ephemeral });
 
-    const { stats }: { stats: APIShard[] } = await managerFetch('api/stats/', { method: 'GET' });
+    const { stats }: { stats: APIShard[] } = await managerFetch('api/v0/shards/stats', {});
 
     let data = stats.map(({ ip, ...keepAttrs }) => keepAttrs);
 
@@ -91,13 +92,16 @@ export default command({
   },
 });
 
-const durationFormatter = new DurationFormatter();
+const durationFormatter = new DurationFormat('en-US', { style: 'long' });
 
 function parseShardInfoContent(shard: Omit<APIShard, 'ip'>) {
+  let uptime = Temporal.Duration.from({ seconds: shard.uptimeSeconds });
+  uptime = uptime.round({ smallestUnit: 'minutes', largestUnit: 'weeks' });
+
   return [
     `  **Status**: \`${shard.status === 0 ? '🟢 Online' : `🔴 ${Status[shard.status]}`}\``,
     `  **Guilds**: \`${shard.serverCount.toLocaleString()}\``,
-    `  **Uptime**: \`${durationFormatter.format(shard.uptimeSeconds * 1000, 3)}\` since <t:${
+    `  **Uptime**: \`${durationFormatter.format(uptime)}\` since <t:${
       shard.readyDate
     }:f>, <t:${shard.readyDate}:R>`,
     `  **Last updated**: <t:${shard.changedHealthDate}:T>, <t:${shard.changedHealthDate}:R>`,

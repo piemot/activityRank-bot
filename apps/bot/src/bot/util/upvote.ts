@@ -1,12 +1,13 @@
-import { getMemberModel } from '#bot/models/guild/guildMemberModel.js';
-import { getGuildModel } from '#bot/models/guild/guildModel.js';
-import { getUserModel } from '#bot/models/userModel.js';
-import { time, type GuildMember, type InteractionReplyOptions } from 'discord.js';
-import { getVoteMultiplier, hasNoXpRole } from '#util/fct.js';
-import { getWaitTime } from './cooldownUtil.js';
-import statFlushCache from '#bot/statFlushCache.js';
-import { PATREON_URL } from './constants.js';
-import { assertUnreachable } from './typescript.js';
+import { type GuildMember, type InteractionReplyOptions, time } from 'discord.js';
+import invariant from 'tiny-invariant';
+import { getMemberModel } from '#bot/models/guild/guildMemberModel.ts';
+import { getGuildModel } from '#bot/models/guild/guildModel.ts';
+import { getUserModel } from '#bot/models/userModel.ts';
+import statFlushCache from '#bot/statFlushCache.ts';
+import { getVoteMultiplier, hasNoXpRole } from '#util/fct.ts';
+import { PATREON_URL } from './constants.ts';
+import { getWaitTime } from './cooldownUtil.ts';
+import { assertUnreachable } from './typescript.ts';
 
 /**
  * A cache of members in the format `guildId.userId` to the Date they can next upvote again.
@@ -17,32 +18,34 @@ const upvoteCache = new Map<string, Date>();
 /**
  * The status of an attempt to upvote another member.
  */
-export enum UpvoteAttempt {
+export const UpvoteAttempt = {
   /** Successfully upvoted the target */
-  Success = 0,
+  Success: 'Success',
   /** The guild has upvotes disabled globally. */
-  DisabledGuild = 1,
+  DisabledGuild: 'DisabledGuild',
   /** Attempted to upvote a bot. */
-  TargetBot = 2,
+  TargetBot: 'TargetBot',
   /** Attempted to upvote self. */
-  TargetSelf = 3,
+  TargetSelf: 'TargetSelf',
   /** The target has a noXP role that prohibits adding XP. */
-  TargetHasNoXP = 4,
+  TargetHasNoXP: 'TargetHasNoXP',
   /** The user has voted recently. */
-  TimeoutNotElapsed = 5,
-}
+  TimeoutNotElapsed: 'TimeoutNotElapsed',
+} as const;
+
+export type UpvoteAttempt = (typeof UpvoteAttempt)[keyof typeof UpvoteAttempt];
 
 type UpvoteAttemptResult =
-  | { status: UpvoteAttempt.Success; multiplier: number }
+  | { status: typeof UpvoteAttempt.Success; multiplier: number }
   | {
       status:
-        | UpvoteAttempt.DisabledGuild
-        | UpvoteAttempt.TargetBot
-        | UpvoteAttempt.TargetSelf
-        | UpvoteAttempt.TargetHasNoXP;
+        | typeof UpvoteAttempt.DisabledGuild
+        | typeof UpvoteAttempt.TargetBot
+        | typeof UpvoteAttempt.TargetSelf
+        | typeof UpvoteAttempt.TargetHasNoXP;
     }
   | {
-      status: UpvoteAttempt.TimeoutNotElapsed;
+      status: typeof UpvoteAttempt.TimeoutNotElapsed;
       nextUpvote: Date;
     };
 
@@ -56,8 +59,7 @@ export async function attemptUpvote(
   voter: GuildMember,
   target: GuildMember,
 ): Promise<UpvoteAttemptResult> {
-  if (voter.guild.id !== target.guild.id)
-    throw new Error('Attempted to upvote members in different guilds');
+  invariant(voter.guild.id === target.guild.id, 'sanity check; members must be in the same guild');
 
   const cachedGuild = await getGuildModel(voter.guild);
 
@@ -86,21 +88,6 @@ export async function attemptUpvote(
       'vote cache caught by fallback measure',
     );
     return { status: UpvoteAttempt.TimeoutNotElapsed, nextUpvote: cachedNextVote };
-  }
-
-  // TODO: [FIXME] - this is a temporary and last-resort debugging warn.
-  if (voter.guild.id === '711942339219685407') {
-    voter.client.logger.warn(
-      {
-        category: 'vote.dbg.laura', // for searching logs
-        targetId: target.id,
-        voterId: voter.id,
-        cachedVoter: cachedMember.cache,
-        cachedNextVote,
-        guildCooldown: cachedGuild.db.voteCooldownSeconds,
-      },
-      'Adding vote in Laura server',
-    );
   }
 
   // Get voter multiplier

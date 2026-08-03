@@ -1,27 +1,24 @@
 import { fileURLToPath } from 'node:url';
-import scheduler from './cron/scheduler.js';
-import fct from './util/fct.js';
-import { ShardingManager } from 'discord.js';
-import logger from './util/logger.js';
-import { keys } from '#const/config.js';
+import { ShardingManager, type ShardingManagerOptions } from 'discord.js';
+import { exposedPort, keys } from '#const/config.ts';
+import scheduler from './cron/scheduler.ts';
+import fct from './util/fct.ts';
+import logger from './util/logger.ts';
 
 if (!process.env.NODE_ENV || process.env.NODE_ENV !== 'production')
   process.env.NODE_ENV = 'development';
 
-const managerOptions = {
-  token: keys.botAuth,
-  // shardList: Array.from(Array(20).keys()),
-  // totalShards: 20
-};
+const managerOptions: ShardingManagerOptions = { token: keys.botAuth };
 
 const manager = new ShardingManager(
-  fileURLToPath(new URL('./bot/bot.js', import.meta.url)),
+  fileURLToPath(new URL('./bot/bot.ts', import.meta.url)),
   managerOptions,
 );
 
 start().catch(async (e) => {
   logger.fatal(e);
-  await fct.waitAndReboot(3000);
+  await fct.sleep(500);
+  process.exit();
 });
 
 async function start() {
@@ -41,7 +38,14 @@ process.on('SIGTERM', () => {
   process.exit();
 });
 
-import type { pino } from 'pino';
+import { serve } from '@hono/node-server';
+import { createRouter } from './router.ts';
+
+serve({ fetch: createRouter(manager).fetch, port: exposedPort });
+logger.info(`Server listening on port ${exposedPort}`);
+logger.info(`[http://0.0.0.0:${exposedPort}]`);
+
+import type pino from 'pino';
 import type { StatFlushCache } from '#bot/statFlushCache.ts';
 import type { XpFlushCache } from '#bot/xpFlushCache.ts';
 

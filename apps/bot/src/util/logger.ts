@@ -1,8 +1,7 @@
 import pino from 'pino';
 
-// @ts-expect-error Pino typings are a bit broken
-const logger = pino.default({
-  base: { pid: process.pid },
+const logger = pino({
+  base: null,
   level: process.env.SUPPRESS_LOGGING !== 'true' ? 'debug' : 'silent',
 });
 

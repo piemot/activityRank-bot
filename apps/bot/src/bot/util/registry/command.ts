@@ -7,10 +7,10 @@ import type {
   ContextMenuCommandInteraction,
   User,
 } from 'discord.js';
-import { type InvalidPredicateCallback, Predicate } from './predicate.js';
-import { ensureI18nLoaded } from '../i18n.js';
 import type { TFunction } from 'i18next';
 import i18next from 'i18next';
+import { ensureI18nLoaded } from '../i18n.ts';
+import type { InvalidPredicateCallback, Predicate } from './predicate.ts';
 
 await ensureI18nLoaded();
 
@@ -47,7 +47,7 @@ interface CommandOptions {
 }
 
 const DEFAULT_PREDICATE: CommandPredicateConfig = {
-  validate: () => Predicate.Allow,
+  validate: () => 'ALLOW',
   invalidCallback: async () => {}, // will never be called
 };
 
@@ -81,9 +81,11 @@ export class Command {
 
   // Get a Record<string, option_type> of the options provided to the command.
   getOptions(interaction: CommandInteraction): Record<string, unknown> {
+    if (interaction.isContextMenuCommand()) return {};
     const returnedOptions: Record<string, unknown> = {};
+
     let data = interaction.options.data;
-    if (interaction.isChatInputCommand() || interaction.isAutocomplete()) {
+    if (interaction.isChatInputCommand()) {
       const group = interaction.options.getSubcommandGroup(false);
       const sub = interaction.options.getSubcommand(false);
 
@@ -132,7 +134,7 @@ these fields: ${this.#optionMeta[option.name]}`,
   }
 
   async execute(interaction: CommandInteraction) {
-    if (this.#predicate.validate(interaction.user) !== Predicate.Allow) {
+    if (this.#predicate.validate(interaction.user) !== 'ALLOW') {
       await this.#predicate.invalidCallback(interaction);
       return;
     }
@@ -146,7 +148,7 @@ these fields: ${this.#optionMeta[option.name]}`,
   }
 
   async autocomplete(interaction: AutocompleteInteraction) {
-    if (this.#predicate.validate(interaction.user) === Predicate.Deny) {
+    if (this.#predicate.validate(interaction.user) === 'DENY') {
       return;
     }
 

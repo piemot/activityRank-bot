@@ -1,18 +1,18 @@
 import {
   ActionRowBuilder,
-  StringSelectMenuBuilder,
-  EmbedBuilder,
   ButtonBuilder,
   ButtonStyle,
   ComponentType,
+  EmbedBuilder,
+  StringSelectMenuBuilder,
 } from 'discord.js';
-import { stripIndent } from 'common-tags';
-import type { TextsCommands, TextsEntry } from '#models/types/external.js';
-import { getTexts } from '#models/managerDb/textModel.js';
-import { config, version } from '#const/config.js';
-import { command } from '#bot/commands.js';
-import { component } from '#bot/util/registry/component.js';
-import { requireUser } from '#bot/util/predicates.js';
+import { outdent } from 'outdent';
+import { command } from '#bot/commands.ts';
+import { requireUser } from '#bot/util/predicates.ts';
+import { component } from '#bot/util/registry/component.ts';
+import { config, version } from '#const/config.ts';
+import { getTexts } from '#models/managerDb/textModel.ts';
+import type { TextsCommands, TextsEntry } from '#models/types/external.d.ts';
 
 export default command({
   name: 'help',
@@ -74,8 +74,8 @@ const close = component({
 function helpMainEmbed(sections: TextsCommands) {
   const embed = new EmbedBuilder()
     .setAuthor({ name: 'ActivityRank Manual' })
-    .setColor(0x00ae86)
-    .setDescription(stripIndent`
+    .setColor(0x01c3d9)
+    .setDescription(outdent`
       *v${version}*
       **[Website](https://activityrank.me/commands)**
       **[Support Server](${config.supportServer.invite})**
@@ -94,7 +94,7 @@ function helpMainEmbed(sections: TextsCommands) {
 
 function helpFeatureEmbed(section: TextsEntry) {
   const embed = new EmbedBuilder()
-    .setColor(0x00ae86)
+    .setColor(0x01c3d9)
     .setTitle(`**Manual - ${section.title}**`)
     .setDescription(section.subdesc);
 

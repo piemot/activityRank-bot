@@ -1,6 +1,6 @@
-import { command } from '#bot/commands.js';
-import { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
-import { config, isProduction } from '#const/config.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } from 'discord.js';
+import { command } from '#bot/commands.ts';
+import { config, isProduction } from '#const/config.ts';
 
 export default command({
   name: 'ping',
@@ -8,7 +8,7 @@ export default command({
     const sent = await interaction.deferReply({ fetchReply: true, ephemeral: true });
 
     const pingEmbed = new EmbedBuilder()
-      .setColor(0x00ae86)
+      .setColor(0x01c3d9)
       .setTitle(t('ping.title'))
       .setDescription(isProduction ? null : t('ping.isDev'))
       .addFields(
@@ -29,7 +29,7 @@ export default command({
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
       new ButtonBuilder()
         .setLabel(t('ping.invite'))
-        .setURL(config.invite.standard)
+        .setURL(config.invites.standard)
         .setStyle(ButtonStyle.Link),
     );
 
