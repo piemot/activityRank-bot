@@ -2,6 +2,7 @@ import { createWriteStream } from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
 import type { Writable } from 'node:stream';
+import { styleText } from 'node:util';
 import type { schemas } from '@activityrank/cfg';
 import * as p from '@clack/prompts';
 import type { API } from '@discordjs/core';
@@ -16,7 +17,60 @@ import { ConfigurableCommand2 } from '../util/classes.ts';
 const FORMATS = ['table', 'csv', 'json', 'toml'] as const;
 type OutputFormat = (typeof FORMATS)[number];
 
-const isValidOutputFormat = (s: string): s is OutputFormat => FORMATS.includes(s as OutputFormat);
+const isOutputFormat = (s: string): s is OutputFormat => FORMATS.includes(s as OutputFormat);
+
+const TIMES = ['alltime', 'year', 'month', 'week', 'day'] as const;
+const STATS = ['textMessage', 'voiceMinute', 'vote', 'invite', 'bonus'] as const;
+
+const prefixed_times = <T extends string>(prefix: T): `${T}_${(typeof TIMES)[number]}`[] =>
+  TIMES.map((time) => `${prefix}_${time}` as const);
+
+/**
+ * # Categories
+ * * `xp`
+ * * `stats`
+ * * `stats_alltime`, `stats_year`, etc
+ * * `textMessage`, `voiceMinute`, etc
+ */
+const SELECT_CATEGORIES = ['xp', 'stats', ...prefixed_times('stats'), ...STATS] as const;
+
+/**
+ * # Selects
+ * * `xp_alltime`, `xp_year`, etc
+ * * `textMessage_alltime`, `voiceMinute_alltime`, etc
+ */
+const VALID_SELECTS = [
+  ...prefixed_times('xp'),
+  ...STATS.flatMap((stat) => prefixed_times(stat)),
+] as const;
+
+const EXPAND_SELECTS: Record<SelectCategory, ValidSelect[]> = {
+  xp: prefixed_times('xp'),
+  stats: STATS.flatMap((stat) => prefixed_times(stat)),
+  stats_alltime: STATS.map((stat) => `${stat}_alltime` as const),
+  stats_year: STATS.map((stat) => `${stat}_year` as const),
+  stats_month: STATS.map((stat) => `${stat}_month` as const),
+  stats_week: STATS.map((stat) => `${stat}_week` as const),
+  stats_day: STATS.map((stat) => `${stat}_day` as const),
+  textMessage: prefixed_times('textMessage'),
+  voiceMinute: prefixed_times('voiceMinute'),
+  vote: prefixed_times('vote'),
+  invite: prefixed_times('invite'),
+  bonus: prefixed_times('bonus'),
+};
+
+type SelectCategory = (typeof SELECT_CATEGORIES)[number];
+type ValidSelect = (typeof VALID_SELECTS)[number];
+type SelectInput = SelectCategory | ValidSelect;
+
+const isSelectCategory = (s: string): s is SelectCategory =>
+  SELECT_CATEGORIES.includes(s as SelectCategory);
+const isValidSelect = (s: string): s is ValidSelect => VALID_SELECTS.includes(s as ValidSelect);
+const isSelectInput = (s: string): s is SelectInput => isSelectCategory(s) || isValidSelect(s);
+
+function deduplicate<T>(arr: T[]): T[] {
+  return [...new Set(arr)];
+}
 
 export class ExportCommand extends ConfigurableCommand2 {
   static override paths = [['export']];
@@ -39,6 +93,11 @@ export class ExportCommand extends ConfigurableCommand2 {
       'The format to output the results as. Defaults to checking `--output`, or otherwise CSV.',
   });
 
+  select = Option.Array('--select', {
+    required: false,
+    description: 'The values to output. Defaults to Alltime XP (xp_alltime).',
+  });
+
   pretty = Option.Boolean('--pretty', {
     required: false,
     description: 'Prints the output as a table. Shorthand for `--format table`.',
@@ -55,6 +114,7 @@ export class ExportCommand extends ConfigurableCommand2 {
     const { keys, api } = await this.loadBaseConfig();
 
     const format = this.getOutputFormat();
+    const selects = this.normalizeSelects(this.select ?? ['xp_alltime']);
 
     if (!this.skipOwnerCheck) {
       const confirm = await this.runOwnerCheck(api);
@@ -76,49 +136,59 @@ export class ExportCommand extends ConfigurableCommand2 {
       outputStream = createWriteStream(path.resolve(filePath));
     }
 
-    const entries = await this.loadDatabaseEntries(this.guildId, keys);
+    const entries = await this.loadDatabaseEntries(this.guildId, keys, selects);
 
     outputStream.write(this.formatEntries(entries, format));
   }
 
-  formatEntries(entries: { userId: string; xp: number }[], format: OutputFormat): string {
+  formatEntries(
+    entries: { user_id: string; [s: string]: string | number }[],
+    format: OutputFormat,
+  ): string {
     switch (format) {
       case 'json':
         return JSON.stringify(entries, null, 4);
       case 'toml':
         return TOML.stringify({
-          entries: entries.map(({ userId, xp }) => ({ userId: BigInt(userId), xp })),
+          entries: entries.map(({ user_id, ...args }) => ({ user_id: BigInt(user_id), ...args })),
         });
       case 'csv':
-        return ['userId,xp', ...entries.map(({ userId, xp }) => `${userId},${xp}`)].join('\n');
+        return [
+          Object.keys(entries[0]).join(','),
+          ...entries.map((entry) => Object.values(entry).join(',')),
+        ].join('\n');
       case 'table':
         return this.formatTable(entries);
     }
   }
 
-  formatTable(entries: { userId: string; xp: number }[]): string {
-    const widths = entries.reduce<{ userId: number; xp: number }>(
-      (prev, curr) => ({
-        userId: Math.max(prev.userId, curr.userId.length),
-        xp: Math.max(prev.xp, curr.xp.toLocaleString().length),
-      }),
-      { userId: 6, xp: 2 },
-    );
-    const userIdWidth = widths.userId;
-    const xpWidth = widths.xp;
+  formatTable(entries: { [s: string]: string | number }[]): string {
+    const widths = entries.reduce<{ [s: string]: number }>((acc, curr) => {
+      for (const key of Object.keys(curr)) {
+        acc[key] = Math.max(acc[key] ?? key.length, curr[key].toLocaleString().length);
+      }
+      return acc;
+    }, {});
 
-    const header = `┏━${'━'.repeat(userIdWidth)}━┯━${'━'.repeat(xpWidth)}━┓`;
-    const seperator = `┠─${'─'.repeat(userIdWidth)}─┼─${'─'.repeat(xpWidth)}─┨`;
-    const footer = `┗━${'━'.repeat(userIdWidth)}━┷━${'━'.repeat(xpWidth)}━┛`;
+    const widthLines = Object.values(widths).map((width) => '─'.repeat(width));
+
+    const header = `┌─${widthLines.join('─┬─')}─┐`;
+    const separator = `├─${widthLines.join('─┼─')}─┤`;
+    const footer = `└─${widthLines.join('─┴─')}─┘`;
+
+    const headerRow = Object.entries(widths).map(([key, width]) =>
+      styleText(['bold', 'cyanBright'], key.padEnd(width)),
+    );
 
     return [
       header,
-      `┃ ${'userId'.padEnd(userIdWidth)} │ ${'xp'.padEnd(xpWidth)} ┃`,
-      seperator,
-      ...entries.map(
-        ({ userId, xp }) =>
-          `┃ ${userId.padEnd(userIdWidth)} │ ${xp.toLocaleString().padEnd(xpWidth)} ┃`,
-      ),
+      `│ ${headerRow.join(' │ ')} │`,
+      separator,
+      ...entries
+        .map((row) =>
+          Object.entries(row).map(([key, value]) => value.toString().padEnd(widths[key])),
+        )
+        .map((row) => `│ ${row.join(' │ ')} │`),
       footer,
     ].join('\n');
   }
@@ -133,7 +203,7 @@ export class ExportCommand extends ConfigurableCommand2 {
     */
     if (this.format) {
       const lower = this.format.toLowerCase();
-      if (isValidOutputFormat(lower)) {
+      if (isOutputFormat(lower)) {
         return lower;
       }
       const formatter = new Intl.ListFormat('en', { style: 'long', type: 'conjunction' });
@@ -192,12 +262,13 @@ export class ExportCommand extends ConfigurableCommand2 {
       });
     }
 
-    p.log.info(`Guild Owner: ${pc.blueBright(ownerData.username)} (${pc.dim(ownerData.id)})`);
+    p.log.info(
+      `Guild Owner: ${styleText('blueBright', ownerData.username)} (${styleText('dim', ownerData.id)})`,
+    );
     p.log.warn(
-      pc.bold(
-        pc.yellow(
-          'Do not disclose the data produced by this command to anyone except the Guild Owner listed above.',
-        ),
+      styleText(
+        ['bold', 'yellow'],
+        'Do not disclose the data produced by this command to anyone except the Guild Owner listed above.',
       ),
     );
 
@@ -207,10 +278,7 @@ export class ExportCommand extends ConfigurableCommand2 {
     });
   }
 
-  async loadDatabaseEntries(
-    guildId: string,
-    keys: z.infer<typeof schemas.bot.keys>,
-  ): Promise<{ userId: string; xp: number }[]> {
+  async getDatabaseHost(guildId: string, keys: z.infer<typeof schemas.bot.keys>): Promise<string> {
     const manager = await createConnection({
       host: keys.managerHost,
       user: keys.managerDb.dbUser,
@@ -231,7 +299,49 @@ export class ExportCommand extends ConfigurableCommand2 {
       p.cancel();
       throw new Error('Failed to find guild in Manager DB');
     }
-    const host = hosts[0][0].host;
+
+    return hosts[0][0].host;
+  }
+
+  normalizeSelects(selects: string[]): ValidSelect[] {
+    const invalid = deduplicate(selects).filter((sel) => !isSelectInput(sel));
+
+    if (invalid.length > 0) {
+      const orFmt = new Intl.ListFormat('en', { style: 'long', type: 'disjunction' });
+      const andFmt = new Intl.ListFormat('en', { style: 'long', type: 'conjunction' });
+
+      const formattedInvalid = orFmt.format(invalid.map((val) => `"${styleText('red', val)}"`));
+      const supportedSelects = andFmt.format([
+        ...SELECT_CATEGORIES.map((val) => styleText(['bold', 'blue'], val)),
+        ...VALID_SELECTS.map((val) => styleText('blue', val)),
+      ]);
+
+      throw new UsageError(
+        `Cannot select value${invalid.length > 1 ? 's' : ''} ${formattedInvalid}.\nSupported selectors: ${supportedSelects}.\n${styleText('dim', `${styleText('bold', 'Bold')} selectors are group selectors and select more than one of the unbolded selectors.`)}`,
+      );
+    }
+
+    const resolvedSelects = deduplicate(
+      selects.flatMap((sel) => {
+        if (isValidSelect(sel)) {
+          return [sel];
+        } else if (isSelectCategory(sel)) {
+          return EXPAND_SELECTS[sel];
+        } else {
+          return [];
+        }
+      }),
+    );
+
+    return resolvedSelects;
+  }
+
+  async loadDatabaseEntries(
+    guildId: string,
+    keys: z.infer<typeof schemas.bot.keys>,
+    selects: ValidSelect[],
+  ): Promise<{ user_id: string; [k: string]: string | number }[]> {
+    const host = await this.getDatabaseHost(guildId, keys);
 
     const shard = await createConnection({
       host,
@@ -242,12 +352,65 @@ export class ExportCommand extends ConfigurableCommand2 {
       bigNumberStrings: true,
     });
 
-    const data = await shard.execute(
-      'SELECT `userId`, `alltime` AS `xp` FROM `guildMember` WHERE `guildId` = ?',
-      [guildId],
-    );
+    const selectors = selects.map((sel) => {
+      if (sel.startsWith('xp_')) {
+        return {
+          table: 'guildMember',
+          select: sel.split('_')[1],
+          as: sel,
+          sum: false,
+          coalesce: false,
+        };
+      } else {
+        const [table, select] = sel.split('_');
+        const isSumTable = table === 'textMessage' || table === 'voiceMinute';
+        return { table, select, as: sel, sum: isSumTable, coalesce: true };
+      }
+    });
+
+    const formattedSelectors = selectors.map((sel) => {
+      let v = `${sel.table}.${sel.select}`;
+      if (sel.sum) {
+        v = `SUM(${v})`;
+      }
+      if (sel.coalesce) {
+        v = `COALESCE(${v}, 0)`;
+      }
+      v = `${v} AS ${sel.as}`;
+      return v;
+    });
+
+    const joins = deduplicate(selectors.map((sel) => sel.table))
+      .filter((tab) => tab !== 'guildMember')
+      .map(
+        (tab) =>
+          `LEFT JOIN ${tab} ON guildMember.userId = ${tab}.userId AND guildMember.guildId = ${tab}.guildId`,
+      );
+
+    const query = `SELECT ${['guildMember.userId AS user_id', ...formattedSelectors].join(', ')} FROM guildMember ${joins.join(' ')} WHERE guildMember.guildId = ? GROUP BY guildMember.userId, guildMember.guildId`;
+
+    /*
+    Example query:
+
+    SELECT
+      guildMember.userId,
+      guildMember.alltime AS xp_alltime,
+      COALESCE(SUM(textMessage.alltime), 0) AS textMessage_alltime,
+      COALESCE(vote.alltime, 0) AS vote_alltime
+    FROM guildMember
+    LEFT JOIN textMessage
+      ON guildMember.userId = textMessage.userId
+      AND guildMember.guildId = textMessage.guildId
+    LEFT JOIN vote
+      ON guildMember.userId = vote.userId
+      AND guildMember.guildId = vote.guildId
+    WHERE guildMember.guildId = ?
+    GROUP BY guildMember.userId, guildMember.guildId;
+    */
+
+    const data = await shard.execute(query, [guildId]);
     await shard.end();
 
-    return data[0] as { userId: string; xp: number }[];
+    return data[0] as { user_id: string; [k: string]: string | number }[];
   }
 }
