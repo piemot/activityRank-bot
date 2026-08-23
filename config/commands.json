@@ -1,11 +1,11 @@
 [
   {
     "default_member_permissions": null,
-    "type": 1,
+    "type": "ChatInput",
     "name": "upvote",
     "options": [
       {
-        "type": 6,
+        "type": "User",
         "name": "member",
         "required": true
       }
@@ -13,43 +13,43 @@
   },
   {
     "default_member_permissions": null,
-    "type": 1,
+    "type": "ChatInput",
     "name": "serverinfo"
   },
   {
     "default_member_permissions": null,
-    "type": 1,
+    "type": "ChatInput",
     "name": "patchnote",
     "options": [
       {
-        "type": 3,
+        "type": "String",
         "name": "version",
         "autocomplete": true
       }
     ]
   },
   {
-    "default_member_permissions": "8",
-    "type": 1,
+    "default_member_permissions": ["Administrator"],
+    "type": "ChatInput",
     "name": "reset",
     "options": [
       {
-        "type": 1,
+        "type": "Subcommand",
         "name": "member",
         "options": [
           {
-            "type": 6,
+            "type": "User",
             "name": "member",
             "required": true
           }
         ]
       },
       {
-        "type": 1,
+        "type": "Subcommand",
         "name": "channel",
         "options": [
           {
-            "type": 7,
+            "type": "Channel",
             "name": "channel",
             "required": true,
             "channel_types": [0, 2, 5, 15]
@@ -57,41 +57,41 @@
         ]
       },
       {
-        "type": 2,
+        "type": "SubcommandGroup",
         "name": "server",
         "options": [
           {
-            "type": 1,
+            "type": "Subcommand",
             "name": "settings"
           },
           {
-            "type": 1,
+            "type": "Subcommand",
             "name": "statistics"
           },
           {
-            "type": 1,
+            "type": "Subcommand",
             "name": "members"
           },
           {
-            "type": 1,
+            "type": "Subcommand",
             "name": "xp"
           },
           {
-            "type": 1,
+            "type": "Subcommand",
             "name": "all"
           }
         ]
       },
       {
-        "type": 2,
+        "type": "SubcommandGroup",
         "name": "deleted",
         "options": [
           {
-            "type": 1,
+            "type": "Subcommand",
             "name": "channel",
             "options": [
               {
-                "type": 3,
+                "type": "String",
                 "name": "id",
                 "required": true,
                 "min_length": 17,
@@ -100,11 +100,11 @@
             ]
           },
           {
-            "type": 1,
+            "type": "Subcommand",
             "name": "role",
             "options": [
               {
-                "type": 3,
+                "type": "String",
                 "name": "id",
                 "required": true,
                 "min_length": 17,
@@ -113,11 +113,11 @@
             ]
           },
           {
-            "type": 1,
+            "type": "Subcommand",
             "name": "channels"
           },
           {
-            "type": 1,
+            "type": "Subcommand",
             "name": "members"
           }
         ]
@@ -126,22 +126,22 @@
   },
   {
     "default_member_permissions": null,
-    "type": 1,
+    "type": "ChatInput",
     "name": "memberinfo",
     "options": [
       {
-        "type": 6,
+        "type": "User",
         "name": "member"
       }
     ]
   },
   {
     "default_member_permissions": null,
-    "type": 1,
+    "type": "ChatInput",
     "name": "inviter",
     "options": [
       {
-        "type": 6,
+        "type": "User",
         "name": "member",
         "required": true
       }
@@ -149,11 +149,11 @@
   },
   {
     "default_member_permissions": null,
-    "type": 1,
+    "type": "ChatInput",
     "name": "faq",
     "options": [
       {
-        "type": 4,
+        "type": "Integer",
         "name": "number",
         "autocomplete": true,
         "min_value": 1,
@@ -163,53 +163,53 @@
   },
   {
     "default_member_permissions": null,
-    "type": 1,
+    "type": "ChatInput",
     "name": "help"
   },
   {
     "default_member_permissions": null,
-    "type": 1,
+    "type": "ChatInput",
     "name": "ping"
   },
   {
-    "default_member_permissions": "32",
-    "type": 1,
+    "default_member_permissions": ["ManageGuild"],
+    "type": "ChatInput",
     "name": "config-server",
     "options": [
       {
-        "type": 1,
+        "type": "Subcommand",
         "name": "bonus",
         "options": [
           {
-            "type": 3,
+            "type": "String",
             "name": "tag"
           },
           {
-            "type": 3,
+            "type": "String",
             "name": "emote"
           }
         ]
       },
       {
-        "type": 1,
+        "type": "Subcommand",
         "name": "vote",
         "options": [
           {
-            "type": 3,
+            "type": "String",
             "name": "tag"
           },
           {
-            "type": 3,
+            "type": "String",
             "name": "emote"
           }
         ]
       },
       {
-        "type": 1,
+        "type": "Subcommand",
         "name": "entries-per-page",
         "options": [
           {
-            "type": 4,
+            "type": "Integer",
             "name": "value",
             "required": true,
             "min_value": 4,
@@ -218,18 +218,18 @@
         ]
       },
       {
-        "type": 1,
+        "type": "Subcommand",
         "name": "cooldown",
         "options": [
           {
-            "type": 4,
+            "type": "Integer",
             "name": "message",
             "autocomplete": true,
             "min_value": 0,
             "max_value": 120
           },
           {
-            "type": 4,
+            "type": "Integer",
             "name": "vote",
             "autocomplete": true,
             "min_value": 180,
@@ -238,33 +238,33 @@
         ]
       },
       {
-        "type": 1,
+        "type": "Subcommand",
         "name": "set"
       }
     ]
   },
   {
-    "default_member_permissions": "32",
-    "type": 1,
+    "default_member_permissions": ["ManageGuild"],
+    "type": "ChatInput",
     "name": "config-role",
     "options": [
       {
-        "type": 1,
+        "type": "Subcommand",
         "name": "levels",
         "options": [
           {
-            "type": 8,
+            "type": "Role",
             "name": "role",
             "required": true
           },
           {
-            "type": 4,
+            "type": "Integer",
             "name": "assign-level",
             "min_value": 0,
             "max_value": 1000
           },
           {
-            "type": 4,
+            "type": "Integer",
             "name": "deassign-level",
             "min_value": 0,
             "max_value": 1000
@@ -272,11 +272,11 @@
         ]
       },
       {
-        "type": 1,
+        "type": "Subcommand",
         "name": "menu",
         "options": [
           {
-            "type": 8,
+            "type": "Role",
             "name": "role",
             "required": true
           }
@@ -285,16 +285,16 @@
     ]
   },
   {
-    "default_member_permissions": "32",
-    "type": 1,
+    "default_member_permissions": ["ManageGuild"],
+    "type": "ChatInput",
     "name": "config-xp",
     "options": [
       {
-        "type": 1,
+        "type": "Subcommand",
         "name": "bonustime",
         "options": [
           {
-            "type": 4,
+            "type": "Integer",
             "name": "time",
             "required": true,
             "autocomplete": true,
@@ -304,11 +304,11 @@
         ]
       },
       {
-        "type": 1,
+        "type": "Subcommand",
         "name": "levelfactor",
         "options": [
           {
-            "type": 4,
+            "type": "Integer",
             "name": "levelfactor",
             "required": true,
             "min_value": 20,
@@ -317,29 +317,29 @@
         ]
       },
       {
-        "type": 1,
+        "type": "Subcommand",
         "name": "xp-per",
         "options": [
           {
-            "type": 4,
+            "type": "Integer",
             "name": "message",
             "min_value": 0,
             "max_value": 10
           },
           {
-            "type": 4,
+            "type": "Integer",
             "name": "voiceminute",
             "min_value": 0,
             "max_value": 5
           },
           {
-            "type": 4,
+            "type": "Integer",
             "name": "vote",
             "min_value": 0,
             "max_value": 100
           },
           {
-            "type": 4,
+            "type": "Integer",
             "name": "invite",
             "min_value": 0,
             "max_value": 1000
@@ -347,29 +347,29 @@
         ]
       },
       {
-        "type": 1,
+        "type": "Subcommand",
         "name": "bonus-xp-per",
         "options": [
           {
-            "type": 4,
+            "type": "Integer",
             "name": "message",
             "min_value": 0,
             "max_value": 20
           },
           {
-            "type": 4,
+            "type": "Integer",
             "name": "voiceminute",
             "min_value": 0,
             "max_value": 10
           },
           {
-            "type": 4,
+            "type": "Integer",
             "name": "vote",
             "min_value": 0,
             "max_value": 200
           },
           {
-            "type": 4,
+            "type": "Integer",
             "name": "invite",
             "min_value": 0,
             "max_value": 2000
@@ -377,34 +377,34 @@
         ]
       },
       {
-        "type": 1,
+        "type": "Subcommand",
         "name": "xp-per-role",
         "options": [
           {
-            "type": 8,
+            "type": "Role",
             "name": "role",
             "required": true
           },
           {
-            "type": 4,
+            "type": "Integer",
             "name": "message",
             "min_value": 0,
             "max_value": 30
           },
           {
-            "type": 4,
+            "type": "Integer",
             "name": "voiceminute",
             "min_value": 0,
             "max_value": 15
           },
           {
-            "type": 4,
+            "type": "Integer",
             "name": "vote",
             "min_value": 0,
             "max_value": 300
           },
           {
-            "type": 4,
+            "type": "Integer",
             "name": "invite",
             "min_value": 0,
             "max_value": 3000
@@ -414,43 +414,43 @@
     ]
   },
   {
-    "default_member_permissions": "32",
-    "type": 1,
+    "default_member_permissions": ["ManageGuild"],
+    "type": "ChatInput",
     "name": "bonus",
     "options": [
       {
-        "type": 1,
+        "type": "Subcommand",
         "name": "role",
         "options": [
           {
-            "type": 8,
+            "type": "Role",
             "name": "role",
             "required": true
           },
           {
-            "type": 4,
+            "type": "Integer",
             "name": "change",
             "required": true,
             "min_value": -1000000,
             "max_value": 1000000
           },
           {
-            "type": 5,
+            "type": "Boolean",
             "name": "use-beta"
           }
         ]
       },
       {
-        "type": 1,
+        "type": "Subcommand",
         "name": "member",
         "options": [
           {
-            "type": 6,
+            "type": "User",
             "name": "member",
             "required": true
           },
           {
-            "type": 4,
+            "type": "Integer",
             "name": "change",
             "required": true,
             "min_value": -1000000,
@@ -461,27 +461,27 @@
     ]
   },
   {
-    "default_member_permissions": "32",
-    "type": 1,
+    "default_member_permissions": ["ManageGuild"],
+    "type": "ChatInput",
     "name": "config-messages"
   },
   {
     "default_member_permissions": null,
-    "type": 1,
+    "type": "ChatInput",
     "name": "config-member"
   },
   {
-    "default_member_permissions": "48",
-    "type": 1,
+    "default_member_permissions": ["ManageChannels", "ManageGuild"],
+    "type": "ChatInput",
     "name": "config-channel",
     "options": [
       {
-        "type": 7,
+        "type": "Channel",
         "name": "channel",
         "channel_types": [0, 2, 4, 5, 15]
       },
       {
-        "type": 3,
+        "type": "String",
         "name": "id",
         "min_length": 17,
         "max_length": 20
@@ -490,77 +490,77 @@
   },
   {
     "default_member_permissions": null,
-    "type": 1,
+    "type": "ChatInput",
     "name": "top"
   },
   {
     "default_member_permissions": null,
-    "type": 1,
+    "type": "ChatInput",
     "name": "rank",
     "options": [
       {
-        "type": 6,
+        "type": "User",
         "name": "member"
       }
     ]
   },
   {
-    "default_member_permissions": "8",
-    "type": 1,
+    "default_member_permissions": ["Administrator"],
+    "type": "ChatInput",
     "name": "update-roles"
   },
   {
-    "default_member_permissions": "8",
-    "type": 1,
+    "default_member_permissions": ["Administrator"],
+    "type": "ChatInput",
     "name": "customize-bot"
   },
   {
-    "default_member_permissions": "8",
-    "type": 1,
-    "contexts": [0],
+    "default_member_permissions": ["Administrator"],
+    "type": "ChatInput",
+    "contexts": ["Guild"],
     "name": "leaderboard",
     "options": [
       {
-        "type": 1,
+        "type": "Subcommand",
         "name": "activate",
         "options": [
           {
-            "type": 7,
+            "type": "Channel",
             "name": "channel",
             "required": true,
-            "channel_types": [0, 2, 5]
+            "channel_types": ["GuildText", 2, 5]
           }
         ]
       },
       {
-        "type": 1,
+        "type": "Subcommand",
         "name": "destroy"
       }
     ]
   },
   {
-    "default_member_permissions": "6",
-    "type": 1,
+    "default_member_permissions": ["ModerateMembers"],
+    "type": "ChatInput",
     "deployment": "LOCAL_ONLY",
     "name": "blacklist",
     "options": [
       {
-        "type": 1,
+        "type": "Subcommand",
         "name": "user",
         "options": [
           {
-            "type": 6,
+            "type": "User",
             "name": "user",
             "required": true
           }
         ]
       },
       {
-        "type": 1,
+        "type": "Subcommand",
         "name": "guild",
         "options": [
           {
-            "type": 3,
+            "type": "String",
             "name": "id",
             "required": true,
             "min_length": 17,
@@ -571,58 +571,58 @@
     ]
   },
   {
-    "default_member_permissions": "4",
-    "type": 1,
+    "default_member_permissions": ["BanMembers"],
+    "type": "ChatInput",
     "deployment": "LOCAL_ONLY",
     "name": "eval",
     "options": [
       {
-        "type": 3,
+        "type": "String",
         "name": "eval",
         "required": true
       },
       {
-        "type": 5,
+        "type": "Boolean",
         "name": "async"
       },
       {
-        "type": 3,
+        "type": "String",
         "name": "server-id",
         "min_length": 17,
         "max_length": 20
       },
       {
-        "type": 4,
+        "type": "Integer",
         "name": "depth",
         "min_value": 0,
         "max_value": 10
       },
       {
-        "type": 5,
+        "type": "Boolean",
         "name": "show-hidden"
       },
       {
-        "type": 5,
+        "type": "Boolean",
         "name": "visible"
       }
     ]
   },
   {
-    "default_member_permissions": "1099511627776",
-    "type": 1,
+    "default_member_permissions": ["ModerateMembers"],
+    "type": "ChatInput",
     "deployment": "LOCAL_ONLY",
     "name": "reset-jobs",
     "options": [
       {
-        "type": 5,
+        "type": "Boolean",
         "name": "full"
       },
       {
-        "type": 5,
+        "type": "Boolean",
         "name": "eph"
       },
       {
-        "type": 3,
+        "type": "String",
         "name": "search",
         "min_length": 17,
         "max_length": 20
@@ -630,34 +630,34 @@
     ]
   },
   {
-    "default_member_permissions": "1099511627776",
-    "type": 1,
+    "default_member_permissions": ["ModerateMembers"],
+    "type": "ChatInput",
     "deployment": "LOCAL_ONLY",
     "name": "shard-status",
     "options": [
       {
-        "type": 5,
+        "type": "Boolean",
         "name": "full"
       },
       {
-        "type": 5,
+        "type": "Boolean",
         "name": "eph"
       },
       {
-        "type": 5,
+        "type": "Boolean",
         "name": "filtered"
       },
       {
-        "type": 4,
+        "type": "Integer",
         "name": "page",
         "max_value": 200
       },
       {
-        "type": 4,
+        "type": "Integer",
         "name": "search"
       },
       {
-        "type": 3,
+        "type": "String",
         "name": "search-guild",
         "min_length": 17,
         "max_length": 20
@@ -666,21 +666,21 @@
   },
   {
     "default_member_permissions": null,
-    "type": 2,
+    "type": "User",
     "name": "Upvote"
   },
   {
     "default_member_permissions": null,
-    "type": 1,
+    "type": "ChatInput",
     "deployment": "LOCAL_ONLY",
     "name": "api",
     "options": [
       {
-        "type": 1,
+        "type": "Subcommand",
         "name": "create-token",
         "options": [
           {
-            "type": 3,
+            "type": "String",
             "name": "guild-id",
             "required": true,
             "min_length": 17,
