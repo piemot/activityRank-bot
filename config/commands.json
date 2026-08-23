@@ -2,6 +2,7 @@
   {
     "default_member_permissions": null,
     "type": "ChatInput",
+    "contexts": ["Guild"],
     "name": "upvote",
     "options": [
       {
@@ -14,11 +15,13 @@
   {
     "default_member_permissions": null,
     "type": "ChatInput",
+    "contexts": ["Guild"],
     "name": "serverinfo"
   },
   {
     "default_member_permissions": null,
     "type": "ChatInput",
+    "contexts": ["Guild", "BotDM"],
     "name": "patchnote",
     "options": [
       {
@@ -31,6 +34,7 @@
   {
     "default_member_permissions": ["Administrator"],
     "type": "ChatInput",
+    "contexts": ["Guild"],
     "name": "reset",
     "options": [
       {
@@ -127,6 +131,7 @@
   {
     "default_member_permissions": null,
     "type": "ChatInput",
+    "contexts": ["Guild"],
     "name": "memberinfo",
     "options": [
       {
@@ -138,6 +143,7 @@
   {
     "default_member_permissions": null,
     "type": "ChatInput",
+    "contexts": ["Guild"],
     "name": "inviter",
     "options": [
       {
@@ -150,6 +156,7 @@
   {
     "default_member_permissions": null,
     "type": "ChatInput",
+    "contexts": ["Guild", "BotDM"],
     "name": "faq",
     "options": [
       {
@@ -164,16 +171,19 @@
   {
     "default_member_permissions": null,
     "type": "ChatInput",
+    "contexts": ["Guild", "BotDM"],
     "name": "help"
   },
   {
     "default_member_permissions": null,
     "type": "ChatInput",
+    "contexts": ["Guild", "BotDM"],
     "name": "ping"
   },
   {
     "default_member_permissions": ["ManageGuild"],
     "type": "ChatInput",
+    "contexts": ["Guild"],
     "name": "config-server",
     "options": [
       {
@@ -246,6 +256,7 @@
   {
     "default_member_permissions": ["ManageGuild"],
     "type": "ChatInput",
+    "contexts": ["Guild"],
     "name": "config-role",
     "options": [
       {
@@ -287,6 +298,7 @@
   {
     "default_member_permissions": ["ManageGuild"],
     "type": "ChatInput",
+    "contexts": ["Guild"],
     "name": "config-xp",
     "options": [
       {
@@ -416,6 +428,7 @@
   {
     "default_member_permissions": ["ManageGuild"],
     "type": "ChatInput",
+    "contexts": ["Guild"],
     "name": "bonus",
     "options": [
       {
@@ -463,16 +476,19 @@
   {
     "default_member_permissions": ["ManageGuild"],
     "type": "ChatInput",
+    "contexts": ["Guild"],
     "name": "config-messages"
   },
   {
     "default_member_permissions": null,
     "type": "ChatInput",
+    "contexts": ["Guild"],
     "name": "config-member"
   },
   {
     "default_member_permissions": ["ManageChannels", "ManageGuild"],
     "type": "ChatInput",
+    "contexts": ["Guild"],
     "name": "config-channel",
     "options": [
       {
@@ -491,11 +507,13 @@
   {
     "default_member_permissions": null,
     "type": "ChatInput",
+    "contexts": ["Guild"],
     "name": "top"
   },
   {
     "default_member_permissions": null,
     "type": "ChatInput",
+    "contexts": ["Guild"],
     "name": "rank",
     "options": [
       {
@@ -507,11 +525,13 @@
   {
     "default_member_permissions": ["Administrator"],
     "type": "ChatInput",
+    "contexts": ["Guild"],
     "name": "update-roles"
   },
   {
     "default_member_permissions": ["Administrator"],
     "type": "ChatInput",
+    "contexts": ["Guild"],
     "name": "customize-bot"
   },
   {
@@ -541,6 +561,7 @@
   {
     "default_member_permissions": ["ModerateMembers"],
     "type": "ChatInput",
+    "contexts": ["Guild", "BotDM"],
     "deployment": "LOCAL_ONLY",
     "name": "blacklist",
     "options": [
@@ -573,6 +594,7 @@
   {
     "default_member_permissions": ["BanMembers"],
     "type": "ChatInput",
+    "contexts": ["Guild", "BotDM"],
     "deployment": "LOCAL_ONLY",
     "name": "eval",
     "options": [
@@ -610,6 +632,7 @@
   {
     "default_member_permissions": ["ModerateMembers"],
     "type": "ChatInput",
+    "contexts": ["Guild", "BotDM"],
     "deployment": "LOCAL_ONLY",
     "name": "reset-jobs",
     "options": [
@@ -632,6 +655,7 @@
   {
     "default_member_permissions": ["ModerateMembers"],
     "type": "ChatInput",
+    "contexts": ["Guild", "BotDM"],
     "deployment": "LOCAL_ONLY",
     "name": "shard-status",
     "options": [
@@ -667,11 +691,13 @@
   {
     "default_member_permissions": null,
     "type": "User",
+    "contexts": ["Guild"],
     "name": "Upvote"
   },
   {
     "default_member_permissions": null,
     "type": "ChatInput",
+    "contexts": ["Guild", "BotDM"],
     "deployment": "LOCAL_ONLY",
     "name": "api",
     "options": [
