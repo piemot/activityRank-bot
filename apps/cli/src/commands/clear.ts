@@ -1,3 +1,4 @@
+import { styleText } from 'node:util';
 import * as p from '@clack/prompts';
 import { Command, Option } from 'clipanion';
 import pc from 'picocolors';
@@ -34,6 +35,16 @@ export class ClearCommand extends ConfigurableCommand2 {
   });
 
   override async execute() {
+    if (!this.global && !this.local) {
+      console.log(
+        styleText(
+          'red',
+          `✗ At least one of the \`${styleText('cyan', '--global')}\` or \`${styleText('cyan', '--local')}\` flags must be set.`,
+        ),
+      );
+      return;
+    }
+
     p.intro(pc.bgCyan(pc.blackBright('  Clear Commands  ')));
 
     const { api, config } = await this.loadBaseConfig();
@@ -61,51 +72,49 @@ export class ClearCommand extends ConfigurableCommand2 {
       }
     }
 
-    if (this.local) {
-      const localServers = new Set([...this.local, ...config.developmentServers]);
-      const guildsData = await Promise.all(
-        [...localServers].map(
-          async (id) =>
-            await api.guilds.get(id).then(
-              (guild) => ({ success: true as const, id, guild }),
-              () => ({ success: false as const, id }),
-            ),
-        ),
-      );
+    const localServers = new Set([...(this.local ?? []), ...config.developmentServers]);
+    const guildsData = await Promise.all(
+      [...localServers].map(
+        async (id) =>
+          await api.guilds.get(id).then(
+            (guild) => ({ success: true as const, id, guild }),
+            () => ({ success: false as const, id }),
+          ),
+      ),
+    );
 
-      for (const guild of guildsData.filter((s) => !s.success)) {
-        p.log.warn(`Failed to fetch server ${pc.underline(pc.yellow(guild.id))}.`);
+    for (const guild of guildsData.filter((s) => !s.success)) {
+      p.log.warn(`Failed to fetch server ${pc.underline(pc.yellow(guild.id))}.`);
+    }
+
+    const validGuilds = guildsData.filter((s) => s.success);
+
+    const selected = await p.multiselect({
+      message: `Confirm which guilds you would like to ${pc.bold(pc.red('clear local commands from'))}.`,
+      options: validGuilds.map(({ guild }) => ({
+        value: guild.id,
+        label: guild.name,
+        hint: `${guild.id}${config.developmentServers.includes(guild.id) ? ` • from ${pc.blue('config.developmentServers')}` : ''}`,
+      })),
+      // all guilds are selected by default
+      initialValues: validGuilds.map((guild) => guild.id),
+    });
+
+    if (p.isCancel(selected)) {
+      p.cancel('Cancelled.');
+      return 8;
+    }
+
+    if (selected.length > 0) {
+      const spin = p.spinner();
+      spin.start('Clearing local commands');
+
+      for (const guildId of selected) {
+        const name = validGuilds.find((g) => g.id === guildId)?.guild.name;
+        spin.message(`Clearing local commands • ${name}`);
+        await api.applicationCommands.bulkOverwriteGuildCommands(ownUser.id, guildId, []);
       }
-
-      const validGuilds = guildsData.filter((s) => s.success);
-
-      const selected = await p.multiselect({
-        message: `Confirm which guilds you would like to ${pc.bold(pc.red('clear local commands from'))}.`,
-        options: validGuilds.map(({ guild }) => ({
-          value: guild.id,
-          label: guild.name,
-          hint: `${guild.id}${config.developmentServers.includes(guild.id) ? ` • from ${pc.blue('config.developmentServers')}` : ''}`,
-        })),
-        // all guilds are selected by default
-        initialValues: validGuilds.map((guild) => guild.id),
-      });
-
-      if (p.isCancel(selected)) {
-        p.cancel('Cancelled.');
-        return 8;
-      }
-
-      if (selected.length > 0) {
-        const spin = p.spinner();
-        spin.start('Clearing local commands');
-
-        for (const guildId of selected) {
-          const name = validGuilds.find((g) => g.id === guildId)?.guild.name;
-          spin.message(`Clearing local commands • ${name}`);
-          await api.applicationCommands.bulkOverwriteGuildCommands(ownUser.id, guildId, []);
-        }
-        spin.stop('Cleared local commands');
-      }
+      spin.stop('Cleared local commands');
     }
   }
 }

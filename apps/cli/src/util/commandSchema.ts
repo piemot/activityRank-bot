@@ -62,36 +62,38 @@ function preprocessEnum<A extends Record<string, string | number>>(enumObject: A
   return z.preprocess(toIntEnumValue(enumObject), z.enum(enumObject));
 }
 
-function enumKeyOrValue<A extends Record<string, string | number>, V extends A[keyof A]>(enumObject: A, value: V) {
+function enumKeyOrValue<A extends Record<string, string | number>, V extends A[keyof A]>(
+  enumObject: A,
+  value: V,
+) {
   const key = enumObject[value as keyof A];
-  return z
-    .union([z.literal(key), z.literal(value)])
-    .transform(() => value);
+  return z.union([z.literal(key), z.literal(value)]).transform(() => value);
 }
 
-const default_member_permissions = z.preprocess(
-  (val) => {
-    if (Array.isArray(val)) {
-      if (val.length < 1) {
-        return null;
-      }
-      if (val.every(canParseBigInt)) {
-        return val.map(permission => BigInt(permission)).reduce((last, curr) => last | curr, 0n).toString();
-      }
-      if (val.every(permission => Object.keys(PermissionFlagsBits).includes(permission))) {
-        return val.map(permission => PermissionFlagsBits[permission as keyof typeof PermissionFlagsBits]).reduce((last, curr) => last | curr, 0n).toString();
-      }
-      return val;
+const default_member_permissions = z.preprocess((val) => {
+  if (Array.isArray(val)) {
+    if (val.length < 1) {
+      return null;
+    }
+    if (val.every(canParseBigInt)) {
+      return val
+        .map((permission) => BigInt(permission))
+        .reduce((last, curr) => last | curr, 0n)
+        .toString();
+    }
+    if (val.every((permission) => Object.keys(PermissionFlagsBits).includes(permission))) {
+      return val
+        .map((permission) => PermissionFlagsBits[permission as keyof typeof PermissionFlagsBits])
+        .reduce((last, curr) => last | curr, 0n)
+        .toString();
     }
     return val;
-  },
-  z
-    .string()
-    .refine(canParseBigInt, {
-      message: 'default_member_permissions must be parseable to a BigInt.',
-    })
-    .nullable(),
-);
+  }
+  return val;
+}, z
+  .string()
+  .refine(canParseBigInt, { message: 'default_member_permissions must be parseable to a BigInt.' })
+  .nullable());
 
 const NAME_REGEX = /^[-_\p{L}\p{N}\p{sc=Deva}\p{sc=Thai}]{1,32}$/u;
 const baseOptionSchema = z.object({
@@ -104,16 +106,24 @@ const choiceSchema = <T extends z.ZodTypeAny>(t: T) =>
   z.array(z.object({ name: z.string().min(1).max(100), value: t })).max(25);
 
 export const basicOptionSchema = z.discriminatedUnion('type', [
-  baseOptionSchema.extend({ type: enumKeyOrValue(ApplicationCommandOptionType, ApplicationCommandOptionType.Boolean) }),
-  baseOptionSchema.extend({ type: enumKeyOrValue(ApplicationCommandOptionType, ApplicationCommandOptionType.User) }),
-  baseOptionSchema.extend({ type: enumKeyOrValue(ApplicationCommandOptionType, ApplicationCommandOptionType.Role) }),
-  baseOptionSchema.extend({ type: enumKeyOrValue(ApplicationCommandOptionType, ApplicationCommandOptionType.Mentionable) }),
-  baseOptionSchema.extend({ type: enumKeyOrValue(ApplicationCommandOptionType, ApplicationCommandOptionType.Attachment) }),
+  baseOptionSchema.extend({
+    type: enumKeyOrValue(ApplicationCommandOptionType, ApplicationCommandOptionType.Boolean),
+  }),
+  baseOptionSchema.extend({
+    type: enumKeyOrValue(ApplicationCommandOptionType, ApplicationCommandOptionType.User),
+  }),
+  baseOptionSchema.extend({
+    type: enumKeyOrValue(ApplicationCommandOptionType, ApplicationCommandOptionType.Role),
+  }),
+  baseOptionSchema.extend({
+    type: enumKeyOrValue(ApplicationCommandOptionType, ApplicationCommandOptionType.Mentionable),
+  }),
+  baseOptionSchema.extend({
+    type: enumKeyOrValue(ApplicationCommandOptionType, ApplicationCommandOptionType.Attachment),
+  }),
   baseOptionSchema.extend({
     type: enumKeyOrValue(ApplicationCommandOptionType, ApplicationCommandOptionType.Channel),
-    channel_types: z
-      .array(preprocessEnum(ChannelType))
-      .optional(),
+    channel_types: z.array(preprocessEnum(ChannelType)).optional(),
   }),
   z.discriminatedUnion('autocomplete', [
     baseOptionSchema.extend({
